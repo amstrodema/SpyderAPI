@@ -26,18 +26,41 @@ namespace MainAPI.Business.Spyder
 
         public async Task<List<Death>> GetDeaths(string countryID)
         {
-            var deaths = await _unitOfWork.Deaths.GetAll();
+            var deaths = from death in await _unitOfWork.Deaths.GetAll()
+                         select new Death()
+                         {
+                             Address = death.Address,
+                             BirthDate = death.BirthDate,
+                             CauseOfDeath = death.CauseOfDeath,
+                             City = death.City,
+                             CountryID = death.CountryID,
+                             CreatedBy = death.CreatedBy,
+                             DateCreated = death.DateCreated,
+                             DateModified = death.DateModified,
+                             DeathCertNo = death.DeathCertNo,
+                             DeathDate = death.DeathDate,
+                             DetailsOfPerson = death.DetailsOfPerson,
+                             ID = death.ID,
+                             Image = ImageService.GetImageFromFolder(death.Image, "Death"),
+                             IsActive = death.IsActive,
+                             ModifiedBy = death.ModifiedBy,
+                             Name = death.Name,
+                             PostalCode = death.PostalCode,
+                             State = death.State
+                         };
             try
             {
                 Guid id = Guid.Parse(countryID);
-                deaths = deaths.Where(p => p.CountryID == id).ToList();
+                deaths = deaths.Where(p => p.CountryID == id);
             }
             catch (Exception)
             {
 
             }
 
-            return deaths;
+            deaths = deaths.OrderByDescending(o => o.DateCreated);
+
+            return deaths.ToList();
         }
 
         public async Task<Death> GetDeathByID(Guid id)

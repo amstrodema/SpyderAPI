@@ -24,5 +24,6 @@ namespace MainAPI.Models.ViewModel
         public int TotalDisLikes { get; set; }
         public bool IsLike { get; set; }
         public bool IsReact { get; set; }
+        public DateTime DateFilter { get; set; }
     }
 }

@@ -34,8 +34,17 @@ namespace MainAPI.Business.Spyder
             }
             if (requestObject.ItemID == "All")
             {
-                return from missing in await _unitOfWork.Missings.GetAll()
-                       where missing.AwarenessTypeNo == requestObject.Data
+                var missingData = await _unitOfWork.Missings.GetAll();
+                try
+                {
+                    var countryID = Guid.Parse(requestObject.CountryID);
+                    missingData = missingData.Where(o => o.CountryID == countryID).ToList();
+                }
+                catch (Exception)
+                {
+                }
+                var missings = from missing in missingData
+                               where missing.AwarenessTypeNo == requestObject.Data
                        select new Missing()
                        {
                            ID = missing.ID,
@@ -44,17 +53,31 @@ namespace MainAPI.Business.Spyder
                            Desc = missing.Desc == null || missing.Desc.Length < 76? missing.Desc : missing.Desc.Substring(0,74),
                            FullInfo = missing.FullInfo == null || missing.FullInfo.Length < 145? missing.FullInfo : missing.FullInfo.Substring(0,143),
                            ItemTypeID = missing.ItemTypeID,
-                           CreatedBy = missing.CreatedBy
+                           CreatedBy = missing.CreatedBy,
+                           DateCreated = missing.DateCreated
                        };
+                return missings.OrderByDescending(p => p.DateCreated);
             }
             else
             {
                 try
                 {
                     Guid id = Guid.Parse(requestObject.ItemID);
-                    return from missing in await _unitOfWork.Missings.GetMissingByItemTypeID(id)
-                       where missing.AwarenessTypeNo == requestObject.Data
+                    var missingData = await _unitOfWork.Missings.GetMissingByItemTypeID(id);
+
+                    try
+                    {
+                    var countryID = Guid.Parse(requestObject.CountryID);
+                        missingData = missingData.Where(o => o.CountryID == countryID).ToList();
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    var missings = from missing in missingData
+                                   where missing.AwarenessTypeNo == requestObject.Data
                        select missing;
+                return missings.OrderByDescending(p => p.DateCreated);
                 }
                 catch (Exception)
                 {

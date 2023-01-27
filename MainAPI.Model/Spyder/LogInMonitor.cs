@@ -11,6 +11,7 @@ namespace MainAPI.Models.Spyder
         public Guid ID { get; set; }
         public Guid UserID { get; set; }
         public Guid UserCountryID { get; set; }
+        public Guid AppID { get; set; }
         public bool IsUserLoggedIn { get; set; }
         public bool IsActive { get; set; }
         public DateTime DateCreated { get; set; } = default;

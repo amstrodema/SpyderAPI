@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
@@ -18,11 +20,13 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly JWTService _jwtService;
         private readonly SettingsBusiness settingsBusiness;
+        private readonly IUnitOfWork unitOfWork;
 
-        public SettingsController(JWTService jWTService, SettingsBusiness settingsBusiness)
+        public SettingsController(JWTService jWTService, SettingsBusiness settingsBusiness, IUnitOfWork unitOfWork)
         {
             _jwtService = jWTService;
             this.settingsBusiness = settingsBusiness;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -56,15 +60,21 @@ namespace MainAPI.Controllers.Spyder
         //    return Ok(res);
         //}
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] Settings settings, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<Settings> requestObject, Guid id)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            if (settings.ID != id)
+            if (requestObject.Data.ID != id)
                 return BadRequest("Invalid record!");
 
-            var res = await settingsBusiness.Update(settings);
+            var res = await settingsBusiness.Update(requestObject.Data);
             return Ok(res);
         }
     }

@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +19,13 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly FlagReportBusiness flagReportBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public FlagReportController(FlagReportBusiness flagReportBusiness, JWTService jWTService)
+        public FlagReportController(FlagReportBusiness flagReportBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.flagReportBusiness = flagReportBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -38,13 +42,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(country);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(FlagReport flagReport)
+        public async Task<ActionResult> Post(RequestObject<FlagReport> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.PetitionerID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await flagReportBusiness.Create(flagReport);
+            var res = await flagReportBusiness.Create(requestObject.Data);
             return Ok(res);
         }
     }

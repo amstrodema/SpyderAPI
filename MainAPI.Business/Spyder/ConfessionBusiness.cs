@@ -34,25 +34,19 @@ namespace MainAPI.Business.Spyder
             {
                 return default;
             }
+
+            var confessionData = await GetConfessionsByDialogueTypeNo(requestObject.Data);
+
             try
             {
-                request.UserID = Guid.Parse(requestObject.UserID);
-                try
-                {
-                    request.CountryID = Guid.Parse(requestObject.CountryID);
-                }
-                catch (Exception)
-                {
-                    request.IsCountry = false;
-                }
-
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                confessionData = confessionData.Where(o => o.CountryID == countryID);
             }
             catch (Exception)
             {
-                request.UserID = default;
             }
 
-            return from confession in await GetConfessionsByDialogueTypeNo(requestObject.Data)
+            var confessions = from confession in confessionData
                    join user in await _unitOfWork.Users.GetAll() on confession.CreatedBy equals user.ID
                    select new ConfessionVM()
                    {
@@ -63,8 +57,11 @@ namespace MainAPI.Business.Spyder
                        Details = confession.Details.Length <=306? confession.Details: confession.Details.Substring(0,306),
                        Image = ImageService.GetImageFromFolder(confession.Image, "Confession"),
                        IsAnonymous = confession.IsAnonymous,
-                       Title = confession.Title
+                       Title = confession.Title,
+                       DateFilter = confession.DateCreated
                    };
+
+            return confessions.OrderByDescending(o => o.DateFilter);
         }
 
         public async Task<ResponseMessage<ConfessionVM>> GetConfessionDetails(RequestObject<string> requestObject)

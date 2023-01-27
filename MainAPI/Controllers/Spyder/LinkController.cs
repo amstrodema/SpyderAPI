@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +19,13 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly LinkBusiness linkBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public LinkController(LinkBusiness linkBusiness, JWTService jWTService)
+        public LinkController(LinkBusiness linkBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.linkBusiness = linkBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -38,13 +42,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(link);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Link link)
+        public async Task<ActionResult> Post(RequestObject<Link> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await linkBusiness.Create(link);
+            var res = await linkBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         //[HttpPut("{id}")]

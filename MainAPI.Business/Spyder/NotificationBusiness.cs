@@ -44,7 +44,8 @@ namespace MainAPI.Business.Spyder
                                                ID = notification.ID,
                                                IsRead = notification.IsRead,
                                                Message = notification.Message,
-                                               Sender = notification.IsSpyder ? "Spyder" : ResolveUser(users, notification.SenderID)
+                                               Sender = notification.IsSpyder ? "Spyder" : ResolveUser(users, notification.SenderID),
+                                               Date = notification.DateCreated
                                            }).ToList();
 
                     notif = notif.Where(k => !k.IsRead);
@@ -59,7 +60,7 @@ namespace MainAPI.Business.Spyder
                     _unitOfWork.Notifications.UpdateMultiple(IsRead.ToArray());
                     await _unitOfWork.Commit();
 
-                    responseMessage.Data = responseMessage.Data.OrderByDescending(a => a.DateCreated);
+                    responseMessage.Data = responseMessage.Data.OrderByDescending(a => a.Date);
 
                     responseMessage.StatusCode = 200;
                 }

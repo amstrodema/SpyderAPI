@@ -9,7 +9,9 @@ namespace MainAPI.Models.ViewModel.Spyder
 {
     public class UserVM
     {
-        public User user { get; set; }
-        public Settings settings { get; set; }
+        public User User { get; set; }
+        public Settings Settings { get; set; }
+        public ClientSystem ClientSystem { get; set; }
+
     }
 }

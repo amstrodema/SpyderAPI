@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Services
 {
-    [AttributeUsage(AttributeTargets.Class  | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     {
         private const string ApiKeyHeaderName = "ApiKey";
@@ -18,7 +18,7 @@ namespace MainAPI.Services
             //before
             //if (!context.HttpContext.Request.Headers.TryGetValue(ApiKeyHeaderName, out var potentialApiKey))
             //{
-            //    context.Result = new UnauthorizedResult();
+            //    context.Result = new BadRequestResult();
             //    return;
             //}
             //var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
@@ -32,7 +32,7 @@ namespace MainAPI.Services
 
             //if (!apiKey.Equals(potentialApiKey))
             //{
-            //    context.Result = new UnauthorizedResult();
+            //    context.Result = new BadRequestResult();
             //    return;
             //}
 

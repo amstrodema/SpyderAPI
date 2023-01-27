@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Models.ViewModel.Spyder;
 using MainAPI.Services;
@@ -18,11 +20,13 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly MissingBusiness missingBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public MissingController(MissingBusiness missingBusiness, JWTService jWTService)
+        public MissingController(MissingBusiness missingBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.missingBusiness = missingBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -54,12 +58,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(missing);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(MissingVM missingVM)
+        public async Task<ActionResult> Post(RequestObject<MissingVM> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.missing.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await missingBusiness.Create(missingVM);
+            var res = await missingBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         //[HttpPut("{id}")]

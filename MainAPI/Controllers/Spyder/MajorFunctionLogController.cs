@@ -37,15 +37,15 @@ namespace MainAPI.Controllers.Spyder
             var res = await majorFunctionLogBusiness.GetMajorFunctionLogByID(id);
             return Ok(res);
         }
-        [HttpPost]
-        public async Task<ActionResult> Post(MajorFunctionLog majorFunctionLog)
-        {
+        //[HttpPost]
+        //public async Task<ActionResult> Post(MajorFunctionLog majorFunctionLog)
+        //{
 
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid entries!");
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Invalid entries!");
 
-            var res = await majorFunctionLogBusiness.Create(majorFunctionLog);
-            return Ok(res);
-        }
+        //    var res = await majorFunctionLogBusiness.Create(majorFunctionLog);
+        //    return Ok(res);
+        //}
     }
 }

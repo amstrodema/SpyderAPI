@@ -181,11 +181,13 @@ namespace MainAPI.Business.Spyder
                 user.EmailVerification = user.Username + GenService.Gen10DigitCode();
                 user.EmailVerificationDate = DateTime.Now;
 
+
+                Guid defaultCountryID = await SetDefaultUserCountry();
+
                 if (user.CountryID == default)
                 {
-                    user.CountryID = await SetDefaultUserCountry();
+                    user.CountryID = defaultCountryID;
                 }
-
                 Wallet wallet = new Wallet();
                 try
                 {
@@ -200,7 +202,7 @@ namespace MainAPI.Business.Spyder
 
                     if (referralWallet == null)
                     {
-                        referralWallet = await SetSystemDefaults();
+                        referralWallet = await SetSystemDefaults(defaultCountryID);
                     }
 
                     wallet = new Wallet()
@@ -274,7 +276,7 @@ namespace MainAPI.Business.Spyder
             return responseMessage;
         }
 
-        private async Task<User> SetTopAdminUser(string username, string password, string refCode, string address)
+        private async Task<User> SetTopAdminUser(string username, string password, string refCode, string address, Guid countryID)
         {
             User spyderUser = new User()
             {
@@ -287,7 +289,8 @@ namespace MainAPI.Business.Spyder
                 IsVerified = true,
                 DateCreated = DateTime.Now,
                 RefCode = refCode,
-                Password = EncryptionService.Encrypt(password)
+                Password = EncryptionService.Encrypt(password),
+                CountryID = countryID
             };
             await _unitOfWork.Users.Create(spyderUser);
 
@@ -340,7 +343,7 @@ namespace MainAPI.Business.Spyder
             }
             return country.ID;
         }
-        private async Task<Wallet> SetSystemDefaults()
+        private async Task<Wallet> SetSystemDefaults(Guid defaultCountryID)
         {
 
             await SetParams("spy_gem_exchange", "Gem to SPY rate", "100000");
@@ -348,6 +351,7 @@ namespace MainAPI.Business.Spyder
             await SetParams("min_withrawal", "Minimum Withdrawal", "3000");
             await SetParams("spy_naira_exchange", "SPY to Naira", "100");
             await SetParams("vote_cost", "Vote Cost", "1");
+            await SetParams("gem_gain_percentage", "Percentage Gem Gain Per Action", "1");
 
             await SetParams("comment_cost", "Comment Cost", "0.1");
             await SetParams("like_action_cost", "Like Action Cost", "0.05");
@@ -360,8 +364,10 @@ namespace MainAPI.Business.Spyder
 
             await SetParams("network_fee_percentage", "Network Fee", "0.1");
 
-            User spyderAdmin = await SetTopAdminUser("spyder", "MainHomePassword!!09!!", "spyder", "Spyder");
-            User userAdmin = await SetTopAdminUser("amstrodema", "Main!!001Password!36", "amstrodema", "Spyder");
+
+
+            User spyderAdmin = await SetTopAdminUser("spyder", "MainHomePassword!!09!!", "spyder", "Spyder", defaultCountryID);
+            User userAdmin = await SetTopAdminUser("amstrodema", "Main!!001Password!36", "amstrodema", "Spyder", defaultCountryID);
             Wallet spyderAdminWallet = await SetTopAdminWallet(90000000, 50000, spyderAdmin.RefCode, spyderAdmin.ID);
             Wallet userAdminWallet = await SetTopAdminWallet(900000, 5000, userAdmin.RefCode, userAdmin.ID, spyderAdminWallet.UserID, spyderAdminWallet.UserID);
 
@@ -398,17 +404,17 @@ namespace MainAPI.Business.Spyder
                 ID = Guid.NewGuid(),
                 DateCreated = DateTime.Now,
                 IsActive = true,
-                IsAllowMessaging = true,
+                IsAllowMessaging = false,
                 IsShowEmail = false,
                 UserID = spyderAdmin.ID,
                 ViewCountryID = spyderAdmin.CountryID,
-                IsAllowAccess = true,
-                IsAnoymousMessaging = true,
+                IsAllowAccess = false,
+                IsAnoymousMessaging = false,
                 IsLocalRange = false,
-                IsReactionNotification = true,
-                IsRecieveAnoymousMessages = true,
+                IsReactionNotification = false,
+                IsRecieveAnoymousMessages = false,
                 IsSendNotificationToMail = false,
-                IsShowPhoneNo = false,
+                IsShowPhoneNo = false
 
             };
 
@@ -417,17 +423,17 @@ namespace MainAPI.Business.Spyder
                 ID = Guid.NewGuid(),
                 DateCreated = DateTime.Now,
                 IsActive = true,
-                IsAllowMessaging = true,
+                IsAllowMessaging = false,
                 IsShowEmail = false,
                 UserID = userAdmin.ID,
                 ViewCountryID = userAdmin.CountryID,
-                IsAllowAccess = true,
-                IsAnoymousMessaging = true,
+                IsAllowAccess = false,
+                IsAnoymousMessaging = false,
                 IsLocalRange = false,
-                IsReactionNotification = true,
-                IsRecieveAnoymousMessages = true,
+                IsReactionNotification = false,
+                IsRecieveAnoymousMessages = false,
                 IsSendNotificationToMail = false,
-                IsShowPhoneNo = false,
+                IsShowPhoneNo = false
 
             };
 
@@ -591,7 +597,8 @@ namespace MainAPI.Business.Spyder
                         IsActive = true,
                         IsUserLoggedIn = true,
                         UserID = user.ID,
-                        UserCountryID = user.CountryID
+                        UserCountryID = user.CountryID,
+                        AppID = Guid.NewGuid()
                     };
 
                     await _unitOfWork.LogInMonitors.Create(logInMonitor);
@@ -599,7 +606,7 @@ namespace MainAPI.Business.Spyder
 
                     try
                     {
-                        userVM.settings = (await settingsBusiness.GetSettingsByUserID(user.ID)).Data;
+                        userVM.Settings = (await settingsBusiness.GetSettingsByUserID(user.ID)).Data;
                     }
                     catch (Exception)
                     {
@@ -607,9 +614,15 @@ namespace MainAPI.Business.Spyder
                         responseMessage.Message = "Login failed. Contact Support For Assistance.";
                         return responseMessage;
                     }
+                    ClientSystem clientSystem = new ClientSystem()
+                    {
+                        AppID = logInMonitor.AppID
+                    };
+
                     if (await _unitOfWork.Commit() > 0)
                     {
-                        userVM.user = user;
+                        userVM.User = user;
+                        userVM.ClientSystem = clientSystem;
                         responseMessage.Data = userVM;
                         responseMessage.StatusCode = 200;
                         responseMessage.Message = $"Hello, {user.Username}! ";

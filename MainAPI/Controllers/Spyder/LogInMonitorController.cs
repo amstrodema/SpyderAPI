@@ -37,15 +37,15 @@ namespace MainAPI.Controllers.Spyder
             var res = await logInMonitorBusiness.GetLogInMonitorByID(id);
             return Ok(res);
         }
-        [HttpPost]
-        public async Task<ActionResult> Post(LogInMonitor logInMonitor)
-        {
+        //[HttpPost]
+        //public async Task<ActionResult> Post(LogInMonitor logInMonitor)
+        //{
 
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid entries!");
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Invalid entries!");
 
-            var res = await logInMonitorBusiness.Create(logInMonitor);
-            return Ok(res);
-        }
+        //    var res = await logInMonitorBusiness.Create(logInMonitor);
+        //    return Ok(res);
+        //}
     }
 }

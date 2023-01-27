@@ -1,4 +1,7 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
+using MainAPI.Models;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -17,19 +20,22 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly ConfessionBusiness confessionBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ConfessionController(ConfessionBusiness confessionBusiness, JWTService jWTService)
+        public ConfessionController(ConfessionBusiness confessionBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.confessionBusiness = confessionBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
-
+     
         [HttpGet]
         public async Task<ActionResult> Get()
         {
             var confessions = await confessionBusiness.GetConfessions();
             return Ok(confessions);
         }
+    
         [HttpPost("GetHeadLines")]
         public async Task<ActionResult> GetHeadLines(RequestObject<int> requestObject)
         {
@@ -50,8 +56,16 @@ namespace MainAPI.Controllers.Spyder
             return Ok(confession);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Confession confession)
+        public async Task<ActionResult> Post(RequestObject<Confession> requestObject)
         {
+            Confession confession = requestObject.Data;
+            ResponseMessage<string> responseMessage = new ResponseMessage<string>();
+
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, confession.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
