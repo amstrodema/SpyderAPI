@@ -1,5 +1,8 @@
 ﻿using MainAPI.Business.Spyder.Feature;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
+using MainAPI.Models.Spyder;
 using MainAPI.Models.Spyder.Feature;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -11,17 +14,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder.Feature
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class FeatureTypeController : ControllerBase
     {
         private readonly FeatureTypeBusiness featureTypeBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public FeatureTypeController(FeatureTypeBusiness featureTypeBusiness, JWTService jWTService)
+        public FeatureTypeController(FeatureTypeBusiness featureTypeBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.featureTypeBusiness = featureTypeBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -45,8 +51,14 @@ namespace MainAPI.Controllers.Spyder.Feature
             return Ok(featureType);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(FeatureType featureType)
+        public async Task<ActionResult> Post(RequestObject<FeatureType> requestObject)
         {
+            FeatureType featureType = requestObject.Data;
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, featureType.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
@@ -55,21 +67,28 @@ namespace MainAPI.Controllers.Spyder.Feature
             return Ok(res);
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] FeatureType featureType, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<FeatureType> requestObject, Guid id)
         {
+            FeatureType featureType = requestObject.Data;
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, featureType.ModifiedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
             if (featureType.ID != id)
                 return BadRequest("Invalid record!");
 
+            ResponseMessage<string> responseMessage = new ResponseMessage<string>();
             int res = await featureTypeBusiness.Update(featureType);
-            ResponseMessage<FeatureType> responseMessage = new ResponseMessage<FeatureType>();
+
             if (res >= 1)
             {
                 responseMessage.Message = "Record updated!";
                 responseMessage.StatusCode = 200;
-                responseMessage.Data = featureType;
             }
             else
             {

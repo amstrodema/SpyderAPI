@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Repository;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -10,17 +12,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class DeathController : ControllerBase
     {
         private readonly DeathBusiness deathBusiness;
         private readonly JWTService _jwtService;
+        private readonly UnitOfWork unitOfWork;
 
-        public DeathController(DeathBusiness deathBusiness, JWTService jWTService)
+        public DeathController(DeathBusiness deathBusiness, JWTService jWTService, UnitOfWork unitOfWork)
         {
             this.deathBusiness = deathBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -44,13 +49,17 @@ namespace MainAPI.Controllers.Spyder
             return Ok(death);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Death death)
+        public async Task<ActionResult> Post(RequestObject<Death> requestObject)
         {
-
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await deathBusiness.Create(death);
+            var res = await deathBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         //[HttpPut("{id}")]

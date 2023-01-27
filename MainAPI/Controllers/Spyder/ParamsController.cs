@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
@@ -11,17 +13,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class ParamsController : ControllerBase
     {
         private readonly ParamsBusiness paramsBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ParamsController(ParamsBusiness paramsBusiness, JWTService jWTService)
+        public ParamsController(ParamsBusiness paramsBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.paramsBusiness = paramsBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -44,31 +49,41 @@ namespace MainAPI.Controllers.Spyder
             return Ok(param);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Params param)
+        public async Task<ActionResult> Post(RequestObject<Params> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await paramsBusiness.Create(param);
+            var res = await paramsBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] Params param, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<Params> requestObject, Guid id)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            if (param.ID != id)
+            if (requestObject.Data.ID != id)
                 return BadRequest("Invalid record!");
 
-            int res = await paramsBusiness.Update(param);
+            int res = await paramsBusiness.Update(requestObject.Data);
             ResponseMessage<Params> responseMessage = new ResponseMessage<Params>();
             if (res >= 1)
             {
                 responseMessage.Message = "Record updated!";
                 responseMessage.StatusCode = 200;
-                responseMessage.Data = param;
             }
             else
             {

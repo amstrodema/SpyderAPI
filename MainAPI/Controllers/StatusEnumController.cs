@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class StatusEnumController : ControllerBase

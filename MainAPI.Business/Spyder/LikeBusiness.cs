@@ -30,8 +30,9 @@ namespace MainAPI.Business.Spyder
                   await _unitOfWork.Likes.GetLikesByItemID(id);
         public async Task<Like> GetLikeByUserID_ItemID(Guid userID, Guid itemID) =>
                   await _unitOfWork.Likes.GetLikeByUserID_ItemID(userID, itemID);
-        public async Task<ResponseMessage<VoteVM>> Like(Like like)
+        public async Task<ResponseMessage<VoteVM>> Like(RequestObject<Like> requestObject)
         {
+            Like like = requestObject.Data;
             ResponseMessage<VoteVM> responseMessage = new ResponseMessage<VoteVM>();
             try
             {
@@ -85,6 +86,22 @@ namespace MainAPI.Business.Spyder
                         getLike.BtnBgTypeLike = like.BtnBgTypeLike;
                         _unitOfWork.Likes.Update(getLike);
                     }                    
+                }
+
+
+
+                try
+                {
+                    Wallet authorWallet = await _unitOfWork.Wallets.GetWalletByUserID(requestObject.AuthorID);
+                    Params gem_gain_percentage_param = await _unitOfWork.Params.GetParamByCode("gem_gain_percentage");
+                    decimal gem_gain_percentage = decimal.Parse(gem_gain_percentage_param.Value);
+
+                    authorWallet.Gem += like_action_cost * 1.0M * gem_gain_percentage / 100;
+
+                    _unitOfWork.Wallets.Update(authorWallet);
+                }
+                catch (Exception)
+                {
                 }
 
                 if (await _unitOfWork.Commit() >= 1)

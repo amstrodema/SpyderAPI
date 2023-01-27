@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -10,17 +12,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class SosController : ControllerBase
     {
         private readonly SosBusiness _sosBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public SosController(SosBusiness sosBusiness, JWTService jWTService)
+        public SosController(SosBusiness sosBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             _sosBusiness = sosBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -37,13 +42,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(res);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Sos sos)
+        public async Task<ActionResult> Post(RequestObject<Sos> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.UserID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await _sosBusiness.Create(sos);
+            var res = await _sosBusiness.Create(requestObject.Data);
             return Ok(res);
         }
     }

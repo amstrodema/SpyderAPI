@@ -68,7 +68,8 @@ namespace MainAPI.Business.Spyder
                             TotalDownVotes = votes.Where(p => p.IsReact && !p.IsLike).Count(),
                             TotalUpVotes = votes.Where(p => p.IsReact && p.IsLike).Count(),
                             VotePercentage = votes.Where(p => p.IsReact && p.IsLike).Count() *1.0f / petition.RequiredVoters * 100,
-                            ClickObject = hall.ClickObject
+                            ClickObject = hall.ClickObject,
+                            PetitionerID = petition.IsAnonymous? default : petition.PetitionerID
                         };
 
                 return x;
@@ -110,7 +111,8 @@ namespace MainAPI.Business.Spyder
                         TotalDownVotes = allVotes.Where(p => p.IsReact && !p.IsLike).Count(),
                         TotalUpVotes = allVotes.Where(p => p.IsReact && p.IsLike).Count(),
                         VotePercentage = allVotes.Where(p => p.IsReact && p.IsLike).Count() * 1.0f / petition.RequiredVoters * 100,
-                        ClickObject = hall.ClickObject
+                        ClickObject = hall.ClickObject,
+                        PetitionerID = petition.IsAnonymous ? default: petition.PetitionerID
                     };
            
 
@@ -153,7 +155,8 @@ namespace MainAPI.Business.Spyder
                          RecordOwnerStory = petition.RecordOwnerStory,
                          Petitioner = petition.IsAnonymous?"Anonymous": user.Username,
                          ClickObject = hall.ClickObject,
-                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID
+                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID,
+                         TotalVotesRequired = petition.RequiredVoters
                      }).ToList();
 
             return x[0];
@@ -213,7 +216,8 @@ namespace MainAPI.Business.Spyder
                                  RecordOwnerStory = petition.RecordOwnerStory,
                                  Petitioner = petition.IsAnonymous ? "Anonymous" : user.Username,
                                  ClickObject = hall.ClickObject,
-                                 PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID
+                                 PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID,
+                                 TotalVotesRequired = petition.RequiredVoters
                              }).ToList();
 
                     return x[0];
@@ -229,7 +233,7 @@ namespace MainAPI.Business.Spyder
 
         public async Task<Petition> GetPetitionByID(Guid id) =>
                   await _unitOfWork.Petitions.Find(id);
-        public async Task<ResponseMessage<Petition>> Create(Petition petition, string webRootPath)
+        public async Task<ResponseMessage<Petition>> Create(Petition petition)
         {
             ResponseMessage<Petition> responseMessage = new ResponseMessage<Petition>();
             try

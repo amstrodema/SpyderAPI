@@ -1,5 +1,8 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Comment.Spyder;
+using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,17 +13,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentController : ControllerBase
     {
         private readonly CommentBusiness commentBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CommentController(CommentBusiness commentBusiness, JWTService jWTService)
+        public CommentController(CommentBusiness commentBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.commentBusiness = commentBusiness;
             _jwtService = jWTService;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -43,13 +49,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(country);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Comment comment)
+        public async Task<ActionResult> Post(RequestObject<Comment> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(_unitOfWork, requestObject.AppID, requestObject.Data.UserID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await commentBusiness.Comment(comment);
+            var res = await commentBusiness.Comment(requestObject);
             return Ok(res);
         }
     }

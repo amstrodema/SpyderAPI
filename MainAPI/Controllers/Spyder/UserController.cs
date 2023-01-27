@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
 using MainAPI.Models.Spyder;
 using MainAPI.Models.ViewModel.Spyder;
@@ -12,17 +14,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly UserBusiness _userBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserController(UserBusiness UserBusiness, JWTService jWTService)
+        public UserController(UserBusiness UserBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             _userBusiness = UserBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -68,9 +73,15 @@ namespace MainAPI.Controllers.Spyder
         }
 
         [HttpPost("ActivateAccount")]
-        public async Task<ActionResult> ActivateAccount(Payment payment)
+        public async Task<ActionResult> ActivateAccount(RequestObject<Payment> requestObject)
         {
-            var res = await _userBusiness.ActivateAccount(payment);
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.ID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
+            var res = await _userBusiness.ActivateAccount(requestObject.Data);
             return Ok(res);
         }
 
@@ -122,6 +133,7 @@ namespace MainAPI.Controllers.Spyder
             return Ok(res);
         }
 
+        //action used to test email
         [HttpPost("SendEmail")]
         public async Task<ActionResult> ValidateUser(Email email)
         {
@@ -133,15 +145,20 @@ namespace MainAPI.Controllers.Spyder
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] User User, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<User> requestObject, Guid id)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.ID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            if (User.ID != id)
+            if (requestObject.Data.ID != id)
                 return BadRequest("Invalid record!");
 
-            await _userBusiness.Update(User);
+            await _userBusiness.Update(requestObject.Data);
             return Ok(User);
         }
 

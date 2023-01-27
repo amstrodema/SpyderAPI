@@ -214,7 +214,8 @@ namespace MainAPI.Business.Spyder
                          RecordOwnerStory = petition.RecordOwnerStory,
                          Petitioner = petition.IsAnonymous ? "Anonymous" : user.Username,
                          ClickObject = hall.ClickObject,
-                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID
+                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID,
+                         TotalVotesRequired = petition.RequiredVoters
                      }).ToList();
 
             return x[0];
@@ -284,7 +285,8 @@ namespace MainAPI.Business.Spyder
                          RecordOwnerStory = petition.RecordOwnerStory,
                          Petitioner = petition.IsAnonymous ? "Anonymous" : user.Username,
                          ClickObject = hall.ClickObject,
-                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID
+                         PetitionerID = petition.IsAnonymous ? default : petition.PetitionerID,
+                         TotalVotesRequired = petition.RequiredVoters
                      }).ToList();
 
             return x[0];

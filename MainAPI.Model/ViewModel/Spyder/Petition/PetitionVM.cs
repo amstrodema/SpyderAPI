@@ -26,6 +26,7 @@ namespace MainAPI.Models.ViewModel.Spyder.Petition
         public string BtnBgTypeDisLike { get; set; }
         public decimal TotalUpVotes { get; set; } 
         public decimal TotalDownVotes { get; set; }
+        public decimal TotalVotesRequired { get; set; }
         public float VotePercentage { get; set; }
         public IEnumerable<Models.Comment.Spyder.Comment> Comments { get; set; }
         public string ClickObject { get; set; }

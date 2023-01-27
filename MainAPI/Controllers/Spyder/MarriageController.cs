@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Models.ViewModel.Spyder;
 using MainAPI.Services;
@@ -11,17 +13,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class MarriageController : ControllerBase
     {
         private readonly MarriageBusiness marriageBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public MarriageController(MarriageBusiness marriageBusiness, JWTService jWTService)
+        public MarriageController(MarriageBusiness marriageBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.marriageBusiness = marriageBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -51,13 +56,18 @@ namespace MainAPI.Controllers.Spyder
             return Ok(marriage);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(MarriageVM marriageVM)
+        public async Task<ActionResult> Post(RequestObject<MarriageVM> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.marriage.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await marriageBusiness.Create(marriageVM);
+            var res = await marriageBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         //[HttpPut("{id}")]

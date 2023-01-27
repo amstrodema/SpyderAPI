@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class SystemLogController : ControllerBase
@@ -36,15 +37,15 @@ namespace MainAPI.Controllers.Spyder
             var res = await systemLogsBusiness.GetSystemLogByID(id);
             return Ok(res);
         }
-        [HttpPost]
-        public async Task<ActionResult> Post(SystemLog majorFunctionLog)
-        {
+        //[HttpPost]
+        //public async Task<ActionResult> Post(SystemLog majorFunctionLog)
+        //{
 
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid entries!");
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Invalid entries!");
 
-            var res = await systemLogsBusiness.Create(majorFunctionLog);
-            return Ok(res);
-        }
+        //    var res = await systemLogsBusiness.Create(majorFunctionLog);
+        //    return Ok(res);
+        //}
     }
 }

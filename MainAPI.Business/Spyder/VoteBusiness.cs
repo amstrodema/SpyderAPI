@@ -33,22 +33,15 @@ namespace MainAPI.Business.Spyder
                   await _unitOfWork.Votes.GetVoteByUserID_ItemID(userID, itemID);
         public async Task<IEnumerable<Vote>> GetVotesByItemID(Guid itemID) =>
                   await _unitOfWork.Votes.GetVotesByItemID(itemID);
-        public async Task<ResponseMessage<VoteVM>> Vote(Vote vote)
+        public async Task<ResponseMessage<VoteVM>> Vote(RequestObject<Vote> requestObject)
         {
+            Vote vote = requestObject.Data;
+
             ResponseMessage<VoteVM> responseMessage = new ResponseMessage<VoteVM>();
             try
             {
                 Vote getVote = await GetVoteByUserID_ItemID(vote.UserID, vote.ItemID);
-                User user = await _unitOfWork.Users.Find(vote.UserID);
-                LogInMonitor loggedUser = await _unitOfWork.LogInMonitors.GetLogInMonitorByUserID(vote.UserID);
-
-                if (user == null || loggedUser == null)
-                {
-                    responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Access denied!";
-                    responseMessage.Data = await CheckVotes(vote.ItemID);
-                    return responseMessage;
-                }
+              
                 Params param = await _unitOfWork.Params.GetParamByCode("vote_cost");
                 decimal votingCost = 0;
 
@@ -98,6 +91,20 @@ namespace MainAPI.Business.Spyder
                         getVote.BtnBgTypeLike = vote.BtnBgTypeLike;
                         _unitOfWork.Votes.Update(getVote);
                     }                   
+                }
+
+                try
+                {
+                    Wallet authorWallet = await _unitOfWork.Wallets.GetWalletByUserID(requestObject.AuthorID);
+                    Params gem_gain_percentage_param = await _unitOfWork.Params.GetParamByCode("gem_gain_percentage");
+                    decimal gem_gain_percentage = decimal.Parse(gem_gain_percentage_param.Value);
+
+                    authorWallet.Gem += votingCost * 1.0M * gem_gain_percentage / 100;
+
+                    _unitOfWork.Wallets.Update(authorWallet);
+                }
+                catch (Exception)
+                {
                 }
 
                 if (await _unitOfWork.Commit() >= 1)

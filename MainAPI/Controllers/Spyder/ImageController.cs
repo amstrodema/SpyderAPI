@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Models.ViewModel.Spyder;
 using MainAPI.Services;
@@ -11,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class ImageController : ControllerBase
@@ -18,12 +21,14 @@ namespace MainAPI.Controllers.Spyder
         private readonly ImageBusiness imageBusiness;
         private readonly JWTService _jwtService;
         private readonly LinkBusiness linkBusiness;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ImageController(ImageBusiness imageBusiness, JWTService jWTService, LinkBusiness linkBusiness)
+        public ImageController(ImageBusiness imageBusiness, JWTService jWTService, LinkBusiness linkBusiness, IUnitOfWork unitOfWork)
         {
             this.imageBusiness = imageBusiness;
             _jwtService = jWTService;
             this.linkBusiness = linkBusiness;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -49,13 +54,17 @@ namespace MainAPI.Controllers.Spyder
             return Ok(image);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Image image)
+        public async Task<ActionResult> Post(RequestObject<Image> requestObject)
         {
-
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await imageBusiness.Create(image);
+            var res = await imageBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         //[HttpPut("{id}")]

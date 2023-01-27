@@ -1,5 +1,8 @@
 ﻿using MainAPI.Business.Spyder.Feature;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
+using MainAPI.Models.Spyder;
 using MainAPI.Models.Spyder.Feature;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -11,17 +14,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder.Feature
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class FeatureGroupController : ControllerBase
     {
         private readonly FeatureGroupBusiness featureGroupBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public FeatureGroupController(FeatureGroupBusiness featureGroupBusiness, JWTService jWTService)
+        public FeatureGroupController(FeatureGroupBusiness featureGroupBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.featureGroupBusiness = featureGroupBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -44,8 +50,14 @@ namespace MainAPI.Controllers.Spyder.Feature
             return Ok(featureGroup);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(FeatureGroup featureGroup)
+        public async Task<ActionResult> Post(RequestObject<FeatureGroup> requestObject)
         {
+            FeatureGroup featureGroup = requestObject.Data;
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, featureGroup.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
@@ -54,21 +66,28 @@ namespace MainAPI.Controllers.Spyder.Feature
             return Ok(res);
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] FeatureGroup featureGroup, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<FeatureGroup> requestObject, Guid id)
         {
+            FeatureGroup featureGroup = requestObject.Data;
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, featureGroup.ModifiedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
             if (featureGroup.ID != id)
                 return BadRequest("Invalid record!");
 
+            ResponseMessage<string> responseMessage = new ResponseMessage<string>();
             int res = await featureGroupBusiness.Update(featureGroup);
-            ResponseMessage<FeatureGroup> responseMessage = new ResponseMessage<FeatureGroup>();
+
             if (res >= 1)
             {
                 responseMessage.Message = "Record updated!";
                 responseMessage.StatusCode = 200;
-                responseMessage.Data = featureGroup;
             }
             else
             {

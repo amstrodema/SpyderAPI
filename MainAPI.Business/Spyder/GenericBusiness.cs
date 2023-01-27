@@ -686,14 +686,20 @@ namespace MainAPI.Business.Spyder
 
             return responseMessage;
         }
-        public async Task<ResponseMessage<IEnumerable<ProfileVM>>> GetProfileContent(Guid userID)
+        public async Task<ResponseMessage<IEnumerable<ProfileVM>>> GetProfileContent(Guid userID, bool isUser)
         {
             ResponseMessage<IEnumerable<ProfileVM>> responseMessage = new ResponseMessage<IEnumerable<ProfileVM>>();
             try
             {
                 List<ProfileVM> profileVMs = new List<ProfileVM>();
 
-                var petitions = from record in await _unitOfWork.Petitions.GetPetitionsByPetitionerID(userID)
+                var petitionRec = await _unitOfWork.Petitions.GetPetitionsByPetitionerID(userID);
+                if (!isUser)
+                {
+                    petitionRec = petitionRec.Where(o => !o.IsAnonymous).ToList();
+                }
+
+                    var petitions = from record in petitionRec
                                 join hall in await _unitOfWork.Halls.GetAll() on record.HallID equals hall.ID
                                 join vote in await _unitOfWork.Votes.GetAll() on record.ID equals vote.ItemID into recordVotes
                                 join comment in await _unitOfWork.Comments.GetAll() on record.ID equals comment.ItemID into recordComments
@@ -708,6 +714,8 @@ namespace MainAPI.Business.Spyder
                                     Dislikes = recordVotes.Where(p => !p.IsLike && p.IsReact).Count(),
                                     Comments = recordComments.Count()
                                 };
+
+             
                 profileVMs = petitions.ToList();
 
                 var marriages = from record in await _unitOfWork.Marriages.GetAll()

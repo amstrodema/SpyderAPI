@@ -17,5 +17,6 @@ namespace MainAPI.Models.ViewModel
 
         public bool IsActive { get; set; }
         public string DateCreated { get; set; } = default;
+        public DateTime Date { get; set; }
     }
 }

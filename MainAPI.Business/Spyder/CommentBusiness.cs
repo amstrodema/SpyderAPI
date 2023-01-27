@@ -44,8 +44,11 @@ namespace MainAPI.Business.Spyder
                    };
         }
 
-        public async Task<ResponseMessage<IEnumerable<CommentVM>>> Comment(Comment comment) 
+        public async Task<ResponseMessage<IEnumerable<CommentVM>>> Comment(RequestObject<Comment> requestObject) 
         {
+            Comment comment = requestObject.Data;
+            Guid authorID = requestObject.AuthorID;
+
             ResponseMessage<IEnumerable<CommentVM>> responseMessage = new ResponseMessage<IEnumerable<CommentVM>>();
             try
             {
@@ -76,6 +79,21 @@ namespace MainAPI.Business.Spyder
                 comment.DateCreated = DateTime.Now;
                 comment.IsActive = true;
                 await _unitOfWork.Comments.Create(comment);
+
+
+                try
+                {
+                    Wallet authorWallet = await _unitOfWork.Wallets.GetWalletByUserID(requestObject.AuthorID);
+                    Params gem_gain_percentage_param = await _unitOfWork.Params.GetParamByCode("gem_gain_percentage");
+                    decimal gem_gain_percentage = decimal.Parse(gem_gain_percentage_param.Value);
+
+                    authorWallet.Gem += comment_cost * 1.0M * gem_gain_percentage / 100;
+
+                    _unitOfWork.Wallets.Update(authorWallet);
+                }
+                catch (Exception)
+                {
+                }
 
                 if (await _unitOfWork.Commit() >= 1)
                 {

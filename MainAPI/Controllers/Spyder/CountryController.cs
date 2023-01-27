@@ -1,4 +1,7 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Data.Repository;
+using MainAPI.Generics;
 using MainAPI.Models;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
@@ -11,17 +14,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class CountryController : ControllerBase
     {
         private readonly CountryBusiness _countryBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public CountryController(CountryBusiness countryBusiness, JWTService jWTService)
+        public CountryController(CountryBusiness countryBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             _countryBusiness = countryBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -38,31 +44,41 @@ namespace MainAPI.Controllers.Spyder
             return Ok(country);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Country country)
+        public async Task<ActionResult> Post(RequestObject<Country> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await _countryBusiness.Create(country);
+            var res = await _countryBusiness.Create(requestObject.Data);
             return Ok(res);
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] Country country, Guid id)
+        public async Task<ActionResult> Put([FromBody] RequestObject<Country> requestObject, Guid id)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.ModifiedBy);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            if (country.ID != id)
+            if (requestObject.Data.ID != id)
                 return BadRequest("Invalid record!");
 
-            int res = await _countryBusiness.Update(country);
+            int res = await _countryBusiness.Update(requestObject.Data);
             ResponseMessage<Country> responseMessage = new ResponseMessage<Country>();
             if (res >= 1)
             {
                 responseMessage.Message = "Record updated!";
                 responseMessage.StatusCode = 200;
-                responseMessage.Data = country;
             }
             else
             {

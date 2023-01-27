@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models.Spyder;
 using MainAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -10,17 +12,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class GenericController : ControllerBase
     {
         private readonly GenericBusiness genericBusiness;
         private readonly JWTService _jwtService;
+        private readonly IUnitOfWork unitOfWork;
 
-        public GenericController(GenericBusiness genericBusiness, JWTService jWTService)
+        public GenericController(GenericBusiness genericBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.genericBusiness = genericBusiness;
             _jwtService = jWTService;
+            this.unitOfWork = unitOfWork;
         }
 
         //[HttpGet]
@@ -49,9 +54,17 @@ namespace MainAPI.Controllers.Spyder
             return Ok(searchResult);
         }
         [HttpGet("GetProfileContent")]
-        public async Task<ActionResult> GetProfileContent(Guid userID)
+        public async Task<ActionResult> GetProfileContent(Guid userID, Guid appID, Guid profileUserID)
         {
-            var profileData = await genericBusiness.GetProfileContent(userID);
+            var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
+            bool isUser = true;
+
+            if (rez.StatusCode != 200)
+            {
+                isUser = false;
+            }
+
+            var profileData = await genericBusiness.GetProfileContent(profileUserID, isUser);
             return Ok(profileData);
         }
         [HttpGet("GetProfileContentWithComment")]
@@ -63,6 +76,7 @@ namespace MainAPI.Controllers.Spyder
         [HttpGet("GetProfileContentWithReaction")]
         public async Task<ActionResult> GetProfileContentWithReaction(Guid userID)
         {
+
             var profileData = await genericBusiness.GetProfileContentWithReaction(userID);
             return Ok(profileData);
         }

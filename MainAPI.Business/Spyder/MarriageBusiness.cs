@@ -30,11 +30,7 @@ namespace MainAPI.Business.Spyder
 
         public async Task<List<Marriage>> GetMarriages(string countryID)
         {
-            var marriages = await _unitOfWork.Marriages.GetAll();
-            try
-            {
-                Guid id = Guid.Parse(countryID);
-                marriages = (from mar in marriages.Where(p => p.CountryID == id)
+            var marriages = from mar in await _unitOfWork.Marriages.GetAll()
                             select new Marriage()
                             {
                                 BrideFName = mar.BrideFName,
@@ -55,14 +51,20 @@ namespace MainAPI.Business.Spyder
                                 ModifiedBy = mar.ModifiedBy,
                                 Type = mar.Type,
                                 Image = ImageService.GetImageFromFolder(mar.Image, "Marriage"),
-                            }).ToList();
+                            };
+            try
+            {
+                Guid id = Guid.Parse(countryID);
+                marriages = marriages.Where(c => c.CountryID == id);
             }
             catch (Exception)
             {
 
             }
 
-            return marriages;
+            marriages = marriages.OrderByDescending(p => p.DateCreated);
+
+            return marriages.ToList();
         }
 
         public async Task<Marriage> GetMarriageByID(Guid id)
@@ -87,7 +89,7 @@ namespace MainAPI.Business.Spyder
             ResponseMessage<Guid> responseMessage = new ResponseMessage<Guid>();
             try
             {
-              
+
                 Marriage marriage = marriageVM.marriage;
                 marriage.ID = Guid.NewGuid();
                 marriage.DateCreated = DateTime.Now;

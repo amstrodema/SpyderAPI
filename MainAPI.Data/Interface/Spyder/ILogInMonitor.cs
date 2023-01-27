@@ -10,5 +10,6 @@ namespace MainAPI.Data.Interface.Spyder
     public interface ILogInMonitor : IGeneric<LogInMonitor>
     {
         Task<LogInMonitor> GetLogInMonitorByUserID(Guid userID);
+        Task<LogInMonitor> GetLogInMonitorByAppIDAndUserID(Guid appID, Guid userID);
     }
 }

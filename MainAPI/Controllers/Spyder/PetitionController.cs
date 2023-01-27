@@ -1,4 +1,6 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
+using MainAPI.Generics;
 using MainAPI.Models;
 using MainAPI.Models.Petition.Spyder;
 using MainAPI.Models.Spyder;
@@ -13,19 +15,20 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class PetitionController : ControllerBase
     {
         private readonly PetitionBusiness petitionBusiness;
         private readonly JWTService _jwtService;
-        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IUnitOfWork unitOfWork;
 
-        public PetitionController(PetitionBusiness petitionBusiness, JWTService jWTService, IWebHostEnvironment webHostEnvironment)
+        public PetitionController(PetitionBusiness petitionBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.petitionBusiness = petitionBusiness;
             _jwtService = jWTService;
-            this.webHostEnvironment = webHostEnvironment;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -71,56 +74,61 @@ namespace MainAPI.Controllers.Spyder
             return Ok(petition);
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Petition petition)
+        public async Task<ActionResult> Post(RequestObject<Petition> requestObject)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.PetitionerID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest("Invalid entries!");
 
-            var res = await petitionBusiness.Create(petition, webHostEnvironment.WebRootPath);
+            var res = await petitionBusiness.Create(requestObject.Data);
             return Ok(res);
         }
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] Petition petition, Guid id)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest("Invalid entries!");
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult> Put([FromBody] Petition petition, Guid id)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Invalid entries!");
 
-            if (petition.ID != id)
-                return BadRequest("Invalid record!");
+        //    if (petition.ID != id)
+        //        return BadRequest("Invalid record!");
 
-            int res = await petitionBusiness.Update(petition);
-            ResponseMessage<Petition> responseMessage = new ResponseMessage<Petition>();
-            if (res >= 1)
-            {
-                responseMessage.Message = "Record updated!";
-                responseMessage.StatusCode = 200;
-                responseMessage.Data = petition;
-            }
-            else
-            {
-                responseMessage.Message = "No record updated!";
-                responseMessage.StatusCode = 201;
-            }
-            return Ok(responseMessage);
-        }
+        //    int res = await petitionBusiness.Update(petition);
+        //    ResponseMessage<Petition> responseMessage = new ResponseMessage<Petition>();
+        //    if (res >= 1)
+        //    {
+        //        responseMessage.Message = "Record updated!";
+        //        responseMessage.StatusCode = 200;
+        //        responseMessage.Data = petition;
+        //    }
+        //    else
+        //    {
+        //        responseMessage.Message = "No record updated!";
+        //        responseMessage.StatusCode = 201;
+        //    }
+        //    return Ok(responseMessage);
+        //}
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(Guid id)
-        {
-            int res = await petitionBusiness.Delete(id);
-            ResponseMessage<string> responseMessage = new ResponseMessage<string>();
-            if (res >= 1)
-            {
-                responseMessage.Message = "Record deleted!";
-                responseMessage.StatusCode = 200;
-            }
-            else
-            {
-                responseMessage.Message = "No record deleted!";
-                responseMessage.StatusCode = 201;
-            }
-            return Ok(responseMessage);
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<ActionResult> Delete(Guid id)
+        //{
+        //    int res = await petitionBusiness.Delete(id);
+        //    ResponseMessage<string> responseMessage = new ResponseMessage<string>();
+        //    if (res >= 1)
+        //    {
+        //        responseMessage.Message = "Record deleted!";
+        //        responseMessage.StatusCode = 200;
+        //    }
+        //    else
+        //    {
+        //        responseMessage.Message = "No record deleted!";
+        //        responseMessage.StatusCode = 201;
+        //    }
+        //    return Ok(responseMessage);
+        //}
     }
 }

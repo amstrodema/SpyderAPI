@@ -16,5 +16,9 @@ namespace MainAPI.Data.Repository.Spyder
         {
             return await GetOneBy(y => y.UserID == userID);
         }
+        public async Task<LogInMonitor> GetLogInMonitorByAppIDAndUserID(Guid appID, Guid userID)
+        {
+            return await GetOneBy(y => y.AppID == appID && y.UserID == userID);
+        }
     }
 }
