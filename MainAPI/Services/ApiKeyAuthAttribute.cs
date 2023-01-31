@@ -16,25 +16,25 @@ namespace MainAPI.Services
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             //before
-            //if (!context.HttpContext.Request.Headers.TryGetValue(ApiKeyHeaderName, out var potentialApiKey))
-            //{
-            //    context.Result = new BadRequestResult();
-            //    return;
-            //}
-            //var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-            //var apiKey = configuration.GetValue<string>("ApiKey");
+            if (!context.HttpContext.Request.Headers.TryGetValue(ApiKeyHeaderName, out var potentialApiKey))
+            {
+                context.Result = new BadRequestResult();
+                return;
+            }
+            var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+            var apiKey = configuration.GetValue<string>("ApiKey");
 
-            //if (apiKey == null)
-            //{
-            //    context.Result = new BadRequestResult();
-            //    return;
-            //}
+            if (apiKey == null)
+            {
+                context.Result = new BadRequestResult();
+                return;
+            }
 
-            //if (!apiKey.Equals(potentialApiKey))
-            //{
-            //    context.Result = new BadRequestResult();
-            //    return;
-            //}
+            if (!apiKey.Equals(potentialApiKey))
+            {
+                context.Result = new BadRequestResult();
+                return;
+            }
 
             await next();
             //after

@@ -19,6 +19,8 @@ namespace MainAPI.Models.Spyder
         public string Status { get; set; }
         public string Toast { get; set; }
         public string City { get; set; }
+        public string State { get; set; }
+        public string PostalCode { get; set; }
         public string Image { get; set; }
         public string WeddingDate { get; set; }
 

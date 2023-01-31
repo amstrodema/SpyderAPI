@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 using MainAPI.Services;
 using MainAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace MainAPI
 {
@@ -38,6 +41,19 @@ namespace MainAPI
             services.AddDbContext<MainAPIContext>(
             o => o.UseSqlServer(Configuration.GetConnectionString(nameof(MainAPIContext))
         ));
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt => {
+                    opt.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = "SPYDER",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("spyderSecretKey")),
+                        
+                    };
+                });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -66,7 +82,7 @@ namespace MainAPI
                 });
             }
 
-          //  app.UseDeveloperExceptionPage();
+            //  app.UseDeveloperExceptionPage();
             app.UseRouting();
 
             app.UseAuthorization();

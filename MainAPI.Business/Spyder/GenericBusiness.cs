@@ -74,7 +74,7 @@ namespace MainAPI.Business.Spyder
                 id = halls.FirstOrDefault(p => p.HallCode == "hall-of-shame").ID;
                 trendingVM.HOSRecord = hallRecords == null ? 0 : hallRecords.Where(p => p.HallID == id).Count();
 
-                id = halls.FirstOrDefault(p => p.HallCode == "fallen-heros").ID;
+                id = halls.FirstOrDefault(p => p.HallCode == "hall-of-fallen-heros").ID;
                 trendingVM.FallHeroRecord = hallRecords == null ? 0 : hallRecords.Where(p => p.HallID == id).Count();
 
                 id = halls.FirstOrDefault(p => p.HallCode == "hall-of-fame").ID;
@@ -192,8 +192,8 @@ namespace MainAPI.Business.Spyder
                     (from record in records.Where(o => Checker(o.Name, searchString) || Checker(o.Address, searchString) ||
                   Checker(o.Author, searchString) || Checker(o.DateCreated, searchString) || Checker(o.BirthDate, searchString) || Checker(o.DeathDate, searchString) ||
                    Checker(o.CountryName, searchString) || Checker(o.CauseOfDeath, searchString) ||
-                     Checker(o.City, searchString) || Checker(o.DeathCertNo, searchString) || Checker(o.DetailsOfPerson, searchString)
-                     || Checker(o.PostalCode, searchString) || Checker(o.State, searchString)|| Checker(o.Type, searchString)
+                      Checker(o.DeathCertNo, searchString) || Checker(o.DetailsOfPerson, searchString)
+                     || Checker(o.PostalCode, searchString) || Checker(o.State, searchString) || Checker(o.City, searchString) || Checker(o.Type, searchString)
                    )
                      select new SearchVM()
                      {
@@ -243,7 +243,8 @@ namespace MainAPI.Business.Spyder
             //var splitted = searchItem.Split(" ");
 
             searchVMs = (from record in missings.Where(o => Checker(o.Title, searchItem) || Checker(o.CountryName, searchItem) ||
-                      Checker(o.DateCreated, searchItem) || Checker(o.Desc, searchItem) ||
+                      Checker(o.DateCreated, searchItem) || Checker(o.Desc, searchItem)
+                      || Checker(o.PostalCode, searchItem) || Checker(o.State, searchItem) || Checker(o.City, searchItem) ||
                         Checker(o.FullInfo, searchItem) || Checker(o.ItemTypeName, searchItem) ||
                         Checker(o.LastSeen, searchItem) || Checker(o.Author, searchItem)
                        )
@@ -267,7 +268,7 @@ namespace MainAPI.Business.Spyder
 
             searchVMs = (from record in marriages.Where(o => Checker(o.Author, searchItem) || Checker(o.CountryName, searchItem) || Checker(o.WeddingDate, searchItem) ||
                       Checker(o.BrideFName, searchItem) || Checker(o.BrideLName, searchItem) || Checker(o.CertNo, searchItem) || Checker(o.Type, searchItem) ||
-                        Checker(o.City, searchItem) || Checker(o.CountryName, searchItem) || Checker(o.Status, searchItem) || Checker(o.Toast, searchItem) ||
+                        Checker(o.State, searchItem) || Checker(o.PostalCode, searchItem) || Checker(o.City, searchItem) || Checker(o.CountryName, searchItem) || Checker(o.Status, searchItem) || Checker(o.Toast, searchItem) ||
                         Checker(o.DateCreated, searchItem) || Checker(o.GroomFName, searchItem) || Checker(o.GroomLName, searchItem)
                        )
                          select new SearchVM()
@@ -313,7 +314,7 @@ namespace MainAPI.Business.Spyder
                                              Checker(o.Author, searchItem) || Checker(o.CountryName, searchItem) || Checker(o.WeddingDate, searchItem) ||
                       Checker(o.BrideFName, searchItem) || Checker(o.BrideLName, searchItem) || Checker(o.CertNo, searchItem) || Checker(o.Type, searchItem) ||
                         Checker(o.City, searchItem) || Checker(o.CountryName, searchItem) || Checker(o.Status, searchItem) || Checker(o.Toast, searchItem) ||
-                        Checker(o.DateCreated, searchItem) || Checker(o.GroomFName, searchItem) || Checker(o.GroomLName, searchItem)
+                        Checker(o.State, searchItem) || Checker(o.PostalCode, searchItem)|| Checker(o.DateCreated, searchItem) || Checker(o.GroomFName, searchItem) || Checker(o.GroomLName, searchItem)
                             ) && searchVMs.FirstOrDefault(p => p.ID == o.ID) == default
                              && searchAlternateVMs.FirstOrDefault(p => p.ID == o.ID) == default
                            )
@@ -329,7 +330,8 @@ namespace MainAPI.Business.Spyder
 
                 searchAlternateVMs.AddRange(from record in missings.Where(o => (Checker(o.Title, searchItem) || Checker(o.CountryName, searchItem) ||
                          Checker(o.DateCreated, searchItem) || Checker(o.Desc, searchItem) ||
-                          Checker(o.FullInfo, searchItem) || Checker(o.ItemTypeName, searchItem) ||
+                          Checker(o.FullInfo, searchItem) || Checker(o.ItemTypeName, searchItem)
+                          || Checker(o.PostalCode, searchString) || Checker(o.State, searchString) || Checker(o.City, searchString)||
                           Checker(o.LastSeen, searchItem) || Checker(o.Author, searchItem)) && searchVMs.FirstOrDefault(p => p.ID == o.ID) == default
                            && searchAlternateVMs.FirstOrDefault(p => p.ID == o.ID) == default
                          )
@@ -570,7 +572,10 @@ namespace MainAPI.Business.Spyder
                                Title = record.Title,
                                LastSeen = record.LastSeen,
                                Image = record.Image,
-                               ItemTypeName = ResolveMissing(record.AwarenessTypeNo)
+                               ItemTypeName = ResolveMissing(record.AwarenessTypeNo),
+                               State = record.State,
+                               City = record.City,
+                               PostalCode = record.PostalCode
                            };
             return missings.ToList();
         }
@@ -607,7 +612,10 @@ namespace MainAPI.Business.Spyder
                                 Status = record.Status,
                                 Toast = record.Toast,
                                 Type = record.Type,
-                                WeddingDate = record.DateCreated.ToString("f")
+                                WeddingDate = record.DateCreated.ToString("f"),
+                                PostalCode = record.PostalCode,
+                                State = record.State
+                                
                             };
             return marriages.ToList();
         }
@@ -691,6 +699,16 @@ namespace MainAPI.Business.Spyder
             ResponseMessage<IEnumerable<ProfileVM>> responseMessage = new ResponseMessage<IEnumerable<ProfileVM>>();
             try
             {
+                Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
+
+                if (!settings.IsAllowAccess)
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Profile is locked";
+
+                    return responseMessage;
+                }
+
                 List<ProfileVM> profileVMs = new List<ProfileVM>();
 
                 var petitionRec = await _unitOfWork.Petitions.GetPetitionsByPetitionerID(userID);
@@ -871,9 +889,20 @@ namespace MainAPI.Business.Spyder
         public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithComment(Guid userID)
         {
             ResponseMessage<List<ProfileVM>> responseMessage = new ResponseMessage<List<ProfileVM>>();
-            var comments = await _unitOfWork.Comments.GetAll();
             try
             {
+
+                Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
+
+                if (!settings.IsAllowAccess)
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Profile is locked";
+
+                    return responseMessage;
+                }
+
+                var comments = await _unitOfWork.Comments.GetAll();
                 List<ProfileVM> profileVMs = new List<ProfileVM>();
 
                 var petitions = from comm in comments
@@ -1003,12 +1032,22 @@ namespace MainAPI.Business.Spyder
         public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithReaction(Guid userID)
         {
             ResponseMessage<List<ProfileVM>> responseMessage = new ResponseMessage<List<ProfileVM>>();
-            var votes = await _unitOfWork.Votes.GetAll();
-            var likes = await _unitOfWork.Likes.GetAll();
-            var comments = await _unitOfWork.Comments.GetAll();
 
             try
             {
+                Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
+
+                if (!settings.IsAllowAccess)
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Profile is locked";
+
+                    return responseMessage;
+                }
+
+                var votes = await _unitOfWork.Votes.GetAll();
+                var likes = await _unitOfWork.Likes.GetAll();
+                var comments = await _unitOfWork.Comments.GetAll();
                 List<ProfileVM> profileVMs = new List<ProfileVM>();
 
                 var petitions = from comm in votes

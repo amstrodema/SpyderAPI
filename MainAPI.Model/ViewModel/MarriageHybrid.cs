@@ -22,6 +22,8 @@ namespace MainAPI.Models.ViewModel
         public string City { get; set; }
         public string Image { get; set; }
         public string WeddingDate { get; set; }
+        public string State { get; set; }
+        public string PostalCode { get; set; }
 
 
         public DateTime DateCreated { get; set; }

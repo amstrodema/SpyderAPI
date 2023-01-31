@@ -47,7 +47,7 @@ namespace MainAPI.Controllers.Spyder
         public async Task<ActionResult> GetWalletDetailsByUserID(Guid userId, Guid appID)
         {
             var rez = await ValidateLogIn.Validate(unitOfWork, appID, userId);
-            if (rez.StatusCode != 200)
+            if (rez.StatusCode == 209)
             {
                 return Ok(rez);
             }

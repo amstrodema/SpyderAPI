@@ -17,6 +17,9 @@ namespace MainAPI.Models.ViewModel.Spyder
         public string Desc { get; set; }
         public string FullInfo { get; set; }
         public string Image { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string PostalCode { get; set; }
 
         public string LastSeen { get; set; }
 

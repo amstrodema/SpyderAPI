@@ -35,7 +35,7 @@ namespace MainAPI.Business.Spyder
                 if (flagReport1 != null)
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Item reported already";
+                    responseMessage.Message = "Reported already";
                     return responseMessage;
                 }
 
@@ -52,13 +52,13 @@ namespace MainAPI.Business.Spyder
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Report not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Try Again later.";
             }
 
             return responseMessage;

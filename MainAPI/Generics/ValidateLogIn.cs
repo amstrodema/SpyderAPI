@@ -18,23 +18,23 @@ namespace MainAPI.Generics
                 User user = await unitOfWork.Users.Find(userID);
                 if (user == default)
                 {
-                    responseMessage.StatusCode = 201;
+                    responseMessage.StatusCode = 209;
                     responseMessage.Message = "Invalid user account";
                 }
-                else if (!user.IsActive)
+                else if (await unitOfWork.LogInMonitors.GetLogInMonitorByAppIDAndUserID(appID, userID) == null)
                 {
-                    responseMessage.StatusCode = 201;
-                    responseMessage.Message = "User account limited";
+                    responseMessage.StatusCode = 209;
+                    responseMessage.Message = "Login and try again";
                 }
                 else if (!user.IsActivated)
                 {
                     responseMessage.StatusCode = 201;
                     responseMessage.Message = "Activate your account";
                 }
-                else if (await unitOfWork.LogInMonitors.GetLogInMonitorByAppIDAndUserID(appID, userID) == null)
+                else if (!user.IsActive)
                 {
-                    responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Login and try again";
+                    responseMessage.StatusCode = 209;
+                    responseMessage.Message = "User account limited";
                 }
                 else
                 {

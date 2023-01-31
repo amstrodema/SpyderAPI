@@ -1,4 +1,5 @@
 ﻿using MainAPI.Business.Spyder;
+using MainAPI.Data.Interface;
 using MainAPI.Data.Repository;
 using MainAPI.Generics;
 using MainAPI.Models.Spyder;
@@ -19,9 +20,9 @@ namespace MainAPI.Controllers.Spyder
     {
         private readonly DeathBusiness deathBusiness;
         private readonly JWTService _jwtService;
-        private readonly UnitOfWork unitOfWork;
+        private readonly IUnitOfWork unitOfWork;
 
-        public DeathController(DeathBusiness deathBusiness, JWTService jWTService, UnitOfWork unitOfWork)
+        public DeathController(DeathBusiness deathBusiness, JWTService jWTService, IUnitOfWork unitOfWork)
         {
             this.deathBusiness = deathBusiness;
             _jwtService = jWTService;

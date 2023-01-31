@@ -62,7 +62,16 @@ namespace MainAPI.Controllers.Spyder
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromBody] RequestObject<Settings> requestObject, Guid id)
         {
-            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            Guid userID;
+            try
+            {
+                userID = Guid.Parse(requestObject.UserID);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid entries!");
+            }
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, userID);
             if (rez.StatusCode != 200)
             {
                 return Ok(rez);
