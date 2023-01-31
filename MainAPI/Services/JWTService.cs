@@ -18,15 +18,16 @@ namespace MainAPI.Services
             {
                 new Claim("userId", userSession.UserID.ToString()),
                 new Claim("emailAddress", userSession.EmailAddress.ToString(), ClaimValueTypes.Email),
-                new Claim("fullname", userSession.Fullname.ToString()),
+                new Claim("userName", userSession.Username.ToString()),
             });
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("spySecretKey");
+            var key = Encoding.ASCII.GetBytes("spyderSecretKey");
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                Issuer = "SPYDER",
                 Subject = new ClaimsIdentity(subject),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

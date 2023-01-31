@@ -9,5 +9,6 @@ namespace MainAPI.Models.Spyder
     public class ClientSystem
     {
         public Guid AppID { get; set; }
+        public string JwtToken { get; set; }
     }
 }

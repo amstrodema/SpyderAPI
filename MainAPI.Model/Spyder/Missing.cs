@@ -17,6 +17,9 @@ namespace MainAPI.Models.Spyder
         public string Image { get; set; }
 
         public string LastSeen { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string PostalCode { get; set; }
 
         public int AwarenessTypeNo { get; set; }
 

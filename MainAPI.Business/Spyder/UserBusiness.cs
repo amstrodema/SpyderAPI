@@ -46,14 +46,26 @@ namespace MainAPI.Business.Spyder
 
                     return responseMessage;
                 }
+                Settings settings = await _unitOfWork.Settings.GetByUserID(user.ID);
+
+                if (!settings.IsAllowAccess)
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Profile is locked";
+
+                    return responseMessage;
+                }
+
                 ProfileVM profile = new ProfileVM()
                 {
-                    Name = $"{user.Username}",
+                    Name = $"{user.FName} {user.LName}",
                     ID = user.ID,
                     Username = user.Username,
                     City = user.City,
                     Country = (await _unitOfWork.Countries.Find(user.CountryID)).Name,
-                    Image = user.Image
+                    Image = user.Image,
+                    Phone = settings.IsShowPhoneNo ? user.Phone : "n/a",
+                    Email = settings.IsShowEmail ? user.Email : "n/a"
                 };
                 responseMessage.StatusCode = 200;
                 responseMessage.Data = profile;
@@ -235,7 +247,6 @@ namespace MainAPI.Business.Spyder
                     IsAllowMessaging = true,
                     IsShowEmail = false,
                     UserID = user.ID,
-                    ViewCountryID = user.CountryID,
                     IsAllowAccess = true,
                     IsAnoymousMessaging = true,
                     IsLocalRange = false,
@@ -398,6 +409,7 @@ namespace MainAPI.Business.Spyder
             await SetUpHall("Hall of Shame", "hall-of-shame", "hall-of-shame", 500000, 150, userAdmin.CountryID, userAdmin.ID);
             await SetUpHall("Hall of Fame", "hall-of-fame", "hall-of-fame", 100000, 100, userAdmin.CountryID, userAdmin.ID);
             await SetUpHall("Hall of Fallen Heros", "hall-of-fallen-heros", "hall-of-fallen-heros", 100000, 100, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of the Unforgotten", "hall-of-the-unforgotten", "hall-of-the-unforgotten", 1000, 100, userAdmin.CountryID, userAdmin.ID);
 
             Settings spyderSettings = new Settings()
             {
@@ -407,7 +419,6 @@ namespace MainAPI.Business.Spyder
                 IsAllowMessaging = false,
                 IsShowEmail = false,
                 UserID = spyderAdmin.ID,
-                ViewCountryID = spyderAdmin.CountryID,
                 IsAllowAccess = false,
                 IsAnoymousMessaging = false,
                 IsLocalRange = false,
@@ -426,7 +437,6 @@ namespace MainAPI.Business.Spyder
                 IsAllowMessaging = false,
                 IsShowEmail = false,
                 UserID = userAdmin.ID,
-                ViewCountryID = userAdmin.CountryID,
                 IsAllowAccess = false,
                 IsAnoymousMessaging = false,
                 IsLocalRange = false,
@@ -590,6 +600,12 @@ namespace MainAPI.Business.Spyder
                         return responseMessage;
                     }
 
+                    var monitor = await _unitOfWork.LogInMonitors.GetLogInMonitorByUserID(user.ID);
+                    if (monitor != null)
+                    {
+                        _unitOfWork.LogInMonitors.Delete(monitor);
+                    }
+
                     LogInMonitor logInMonitor = new LogInMonitor()
                     {
                         DateCreated = DateTime.Now,
@@ -606,7 +622,8 @@ namespace MainAPI.Business.Spyder
 
                     try
                     {
-                        userVM.Settings = (await settingsBusiness.GetSettingsByUserID(user.ID)).Data;
+                        Settings settings = await _unitOfWork.Settings.GetByUserID(user.ID);
+                        userVM.Settings = settings;
                     }
                     catch (Exception)
                     {
