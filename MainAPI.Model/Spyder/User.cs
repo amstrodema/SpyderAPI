@@ -31,6 +31,9 @@ namespace MainAPI.Models.Spyder
         public string RefCode { get; set; }
         public string RefererCode { get; set; }
         public string Image { get; set; }
+        public string BankName { get; set; }
+        public string BankAccountNumber { get; set; }
+        public string BankAccountName { get; set; }
         public DateTime EmailVerificationDate { get; set; } = default;
         public DateTime ResetVerificationDate { get; set; } = default;
         public DateTime DateCreated { get; set; } = default;

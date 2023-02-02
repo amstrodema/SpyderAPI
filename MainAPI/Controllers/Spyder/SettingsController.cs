@@ -44,8 +44,14 @@ namespace MainAPI.Controllers.Spyder
         }
 
         [HttpGet("GetSettingsByUserID")]
-        public async Task<ActionResult> GetSettingsByUserID(Guid userID)
+        public async Task<ActionResult> GetSettingsByUserID(Guid userID, Guid appID)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
+            if (rez.StatusCode == 209)
+            {
+                return Ok(rez);
+            }
+
             var res = await settingsBusiness.GetSettingsByUserID(userID);
             return Ok(res);
         }

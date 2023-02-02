@@ -17,5 +17,6 @@ namespace MainAPI.Data.Interface.Spyder
         Task<User> GetUserByResetVerification(string resetVerification);
         Task<string> GetUserRefCodeByUserID(Guid userID);
         Task<Guid> GetUserCountryByUserID(Guid userID);
+        Task<User> GetUserByPhone(string phone);
     }
 }
