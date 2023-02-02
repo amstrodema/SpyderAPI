@@ -42,10 +42,24 @@ namespace MainAPI.Controllers.Spyder
             var param = await paramsBusiness.GetParamsByID(id);
             return Ok(param);
         }
-        [HttpGet("GetParamsByCode")]
-        public async Task<ActionResult> Get(string code)
+        [HttpPost("GetParamsByCode")]
+        public async Task<ActionResult> GetParamsByCode(RequestObject<string> requestObject)
         {
-            var param = await paramsBusiness.GetParamsByCode(code);
+            Guid userID;
+            try
+            {
+                userID = Guid.Parse(requestObject.UserID);
+            }
+            catch (Exception)
+            {
+                userID = default;
+            }
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, userID);
+            if (rez.StatusCode != 200)
+            {
+                return Ok(rez);
+            }
+            var param = await paramsBusiness.GetParamsByCode(requestObject.Data);
             return Ok(param);
         }
         [HttpPost]
@@ -66,7 +80,7 @@ namespace MainAPI.Controllers.Spyder
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromBody] RequestObject<Params> requestObject, Guid id)
         {
-            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.CreatedBy);
+            var rez = await ValidateLogIn.Validate(unitOfWork, requestObject.AppID, requestObject.Data.ModifiedBy);
             if (rez.StatusCode != 200)
             {
                 return Ok(rez);

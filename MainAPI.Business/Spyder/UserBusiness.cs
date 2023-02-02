@@ -63,9 +63,9 @@ namespace MainAPI.Business.Spyder
                     Username = user.Username,
                     City = user.City,
                     Country = (await _unitOfWork.Countries.Find(user.CountryID)).Name,
-                    Image = user.Image,
-                    Phone = settings.IsShowPhoneNo ? user.Phone : "n/a",
-                    Email = settings.IsShowEmail ? user.Email : "n/a"
+                    Image = user.Image == null ? "assets/images/avatar-1.png": ImageService.GetImageFromFolder(user.Image, "Profile"),
+                Phone = settings.IsShowPhoneNo ? user.Phone : "N/A",
+                    Email = settings.IsShowEmail ? user.Email : "N/A"
                 };
                 responseMessage.StatusCode = 200;
                 responseMessage.Data = profile;
@@ -178,6 +178,12 @@ namespace MainAPI.Business.Spyder
                     responseMessage.Message = "Username exists already";
                     return responseMessage;
                 }
+                if (await _unitOfWork.Users.GetUserByPhone(user.Phone) != null)
+                {
+                    responseMessage.StatusCode = 1018;
+                    responseMessage.Message = "Phone No. exists already";
+                    return responseMessage;
+                }
                 if (await GetUserByEmail(user.Email) != null)
                 {
                     responseMessage.StatusCode = 1018;
@@ -237,7 +243,7 @@ namespace MainAPI.Business.Spyder
                 }
 
                 wallet.Spy = await SetParams("initial_spy", "Initial SPY", "10");
-                wallet.Gem = await SetParams("initial_gem", "Initial Gem", "1000");
+                wallet.Gem = await SetParams("initial_gem", "Initial Gem", "100000");
 
                 Settings settings = new Settings()
                 {
@@ -260,8 +266,8 @@ namespace MainAPI.Business.Spyder
 
                 // user.WalletID
 
-                wallet.LegOnePercentage = await SetParams("percentage1", "1st Leg Referral Percentage", "20");
-                wallet.LegTwoPercentage = await SetParams("percentage2", "2nd Leg Referral Percentage", "10");
+                wallet.LegOnePercentage = await SetParams("percentage1", "1st Leg Referral Percentage", "15");
+                wallet.LegTwoPercentage = await SetParams("percentage2", "2nd Leg Referral Percentage", "5");
                 wallet.ActivationCost = await SetParams("activation_cost", "Activation Cost", "1000");
               
 
@@ -287,11 +293,40 @@ namespace MainAPI.Business.Spyder
             return responseMessage;
         }
 
-        private async Task<User> SetTopAdminUser(string username, string password, string refCode, string address, Guid countryID)
+        public async Task<ResponseMessage<User>> SetUserImage(Image image, Guid userID)
+        {
+            ResponseMessage<User> responseMessage = new ResponseMessage<User>();
+            try
+            {
+                User user = await GetUserByID(userID);
+                user.Image = ImageService.SaveImageInFolder(image.Original, userID.ToString(), "Profile");
+                _unitOfWork.Users.Update(user);
+
+                if (await _unitOfWork.Commit() > 0)
+                {
+                    responseMessage.StatusCode = 200;
+                    responseMessage.Message = "Profile updated";
+                }
+                else
+                {
+                    responseMessage.StatusCode = 1018;
+                    responseMessage.Message = "Update failed";
+                }
+            }
+            catch (Exception)
+            {
+                responseMessage.StatusCode = 1018;
+                responseMessage.Message = "Try Again";
+            }
+
+            return responseMessage;
+        }
+
+        private async Task<User> SetTopAdminUser(string username, string password, string refCode, string address, Guid countryID, int accessLevel)
         {
             User spyderUser = new User()
             {
-                AccessLevel = 7,
+                AccessLevel = accessLevel,
                 Address = address,
                 ID = Guid.NewGuid(),
                 Username = username,
@@ -372,15 +407,16 @@ namespace MainAPI.Business.Spyder
             await SetParams("confession_cost", "Confession Cost", "10");
             await SetParams("gallery_link_cost", "Gallery Link Cost", "0.1");
             await SetParams("gallery_image_cost", "Gallery Image Cost", "0.2");
+            await SetParams("systemIsUP", "System Availability", "true");
 
             await SetParams("network_fee_percentage", "Network Fee", "0.1");
 
 
 
-            User spyderAdmin = await SetTopAdminUser("spyder", "MainHomePassword!!09!!", "spyder", "Spyder", defaultCountryID);
-            User userAdmin = await SetTopAdminUser("amstrodema", "Main!!001Password!36", "amstrodema", "Spyder", defaultCountryID);
-            Wallet spyderAdminWallet = await SetTopAdminWallet(90000000, 50000, spyderAdmin.RefCode, spyderAdmin.ID);
-            Wallet userAdminWallet = await SetTopAdminWallet(900000, 5000, userAdmin.RefCode, userAdmin.ID, spyderAdminWallet.UserID, spyderAdminWallet.UserID);
+            User spyderAdmin = await SetTopAdminUser("spyder", "MainHomePassword!!09!!", "spyder", "Spyder", defaultCountryID,9);
+            User userAdmin = await SetTopAdminUser("amstrodema", "Main!!001Password!36", "amstrodema", "Spyder", defaultCountryID,8);
+            Wallet spyderAdminWallet = await SetTopAdminWallet(90000000, 5000000, spyderAdmin.RefCode, spyderAdmin.ID);
+            Wallet userAdminWallet = await SetTopAdminWallet(900000, 5000000, userAdmin.RefCode, userAdmin.ID, spyderAdminWallet.UserID, spyderAdminWallet.UserID);
 
             await _unitOfWork.FeatureGroups.Create(new Models.Spyder.Feature.FeatureGroup()
             {
@@ -638,6 +674,14 @@ namespace MainAPI.Business.Spyder
 
                     if (await _unitOfWork.Commit() > 0)
                     {
+                        try
+                        {
+                            user.Image = ImageService.GetImageFromFolder(user.Image, "Profile");
+                        }
+                        catch (Exception)
+                        {
+                            user.Image = "assets/images/avatar-1.png";
+                        }
                         userVM.User = user;
                         userVM.ClientSystem = clientSystem;
                         responseMessage.Data = userVM;

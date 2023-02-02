@@ -23,6 +23,10 @@ namespace MainAPI.Data.Repository.Spyder
         public async Task<User> GetUserByEmail(string email)
         {
             return await GetOneBy(u => u.Email == email);
+        } 
+        public async Task<User> GetUserByPhone(string phone)
+        {
+            return await GetOneBy(u => u.Phone == phone);
         }
         public async Task<string> GetUserRefCodeByUserID(Guid userID)
         {
