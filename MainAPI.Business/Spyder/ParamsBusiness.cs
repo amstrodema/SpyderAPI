@@ -19,12 +19,21 @@ namespace MainAPI.Business.Spyder
         }
 
         public async Task<List<Params>> GetParams() =>
-         await _unitOfWork.Params.GetAll();
+         (await _unitOfWork.Params.GetAll()).OrderBy(o => o.Name).ToList();
 
         public async Task<int> Update(Params param)
         {
-            param.DateModified = DateTime.Now;
-            _unitOfWork.Params.Update(param);
+            var parm = await _unitOfWork.Params.Find(param.ID);
+            parm.Name = param.Name;
+            parm.Code = param.Code;
+            parm.CreatedBy = param.CreatedBy;
+            parm.DateCreated = param.DateCreated;
+            parm.ModifiedBy = param.ModifiedBy;
+            parm.Value = param.Value;
+
+            parm.DateModified = DateTime.Now;
+
+            _unitOfWork.Params.Update(parm);
             return await _unitOfWork.Commit();
         }
 
