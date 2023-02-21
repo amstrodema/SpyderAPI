@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder.Feature
 {
-    [ApiKeyAuth]
+    //[ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class FeatureTypeController : ControllerBase

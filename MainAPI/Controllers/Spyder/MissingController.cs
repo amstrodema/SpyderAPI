@@ -50,6 +50,12 @@ namespace MainAPI.Controllers.Spyder
             var res = await missingBusiness.GetMissingDetails(requestObject);
             return Ok(res);
         }
+        [HttpPost("UpdateRecord")]
+        public async Task<ActionResult> UpdateRecord(RequestObject<string> requestObject)
+        {
+            var res = await missingBusiness.UpdateRecord(requestObject);
+            return Ok(res);
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id)

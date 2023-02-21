@@ -72,6 +72,7 @@ namespace MainAPI.Business.Spyder
                             PetitionerID = petition.IsAnonymous? default : petition.PetitionerID
                         };
 
+                x = x.OrderByDescending(p => p.TotalUpVotes);
                 return x;
             }
 
@@ -114,7 +115,8 @@ namespace MainAPI.Business.Spyder
                         ClickObject = hall.ClickObject,
                         PetitionerID = petition.IsAnonymous ? default: petition.PetitionerID
                     };
-           
+
+            x = x.OrderByDescending(p => p.TotalUpVotes);
 
             return x;
         }
@@ -307,7 +309,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

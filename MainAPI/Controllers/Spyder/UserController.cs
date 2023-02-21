@@ -94,9 +94,16 @@ namespace MainAPI.Controllers.Spyder
         }
         [ApiKeyAuth]
         [HttpGet("GetUserProfile")]
-        public async Task<ActionResult> GetUserProfile(Guid userID)
+        public async Task<ActionResult> GetUserProfile(Guid userID, Guid appID, Guid profileUserID)
         {
-            var res = await _userBusiness.GetUserProfile(userID);
+            var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
+            bool isUser = true;
+            if (userID != profileUserID || rez.StatusCode != 200)
+            {
+                isUser = false;
+            }
+
+            var res = await _userBusiness.GetUserProfile(profileUserID, isUser);
             return Ok(res);
         }
         [ApiKeyAuth]

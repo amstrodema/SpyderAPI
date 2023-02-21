@@ -161,13 +161,13 @@ namespace MainAPI.Business.Spyder
                 else
                 {
                     responseMessage.StatusCode = (int)HttpStatusCode.BadGateway;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

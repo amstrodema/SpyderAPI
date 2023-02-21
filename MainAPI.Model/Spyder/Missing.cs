@@ -20,6 +20,8 @@ namespace MainAPI.Models.Spyder
         public string City { get; set; }
         public string State { get; set; }
         public string PostalCode { get; set; }
+        public string Update { get; set; }
+        public DateTime UpdateTime { get; set; }
 
         public int AwarenessTypeNo { get; set; }
 

@@ -25,5 +25,9 @@ namespace MainAPI.Models.ViewModel.Spyder
         public Guid CreatorID { get; set; }
         public string Time { get; set; }
         public string Day { get; set; }
+
+        public string Update { get; set; }
+        public string UpdateTime { get; set; }
+        public string UpdateDay { get; set; }
     }
 }

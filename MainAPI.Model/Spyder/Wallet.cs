@@ -29,6 +29,7 @@ namespace MainAPI.Models.Spyder
         public bool IsBanned { get; set; }
         public bool IsActive { get; set; }
         public bool IsOfficial { get; set; }
+        public DateTime BonusDeadline { get; set; } = default;
         public DateTime DateCreated { get; set; } = default;
         public DateTime DateModified { get; set; } = default;
     }

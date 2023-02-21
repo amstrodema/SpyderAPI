@@ -99,7 +99,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 201;
-                responseMessage.Message = "Operation not successful!";
+                responseMessage.Message = "Not successful!";
             }
 
             Missing missing = await _unitOfWork.Missings.Find(request.ItemID);
@@ -121,7 +121,10 @@ namespace MainAPI.Business.Spyder
                 Time = missing.DateCreated.ToString("t"),
                 Title = missing.Title,
                 ItemTypeName = featureGroup == null ? "" : featureGroup.Name,
-                CreatorID = author.ID
+                CreatorID = author.ID,
+                Update = missing.Update,
+                UpdateDay = missing.UpdateTime.ToString("d"),
+                UpdateTime = missing.UpdateTime.ToString("t")
             };
 
 
@@ -147,6 +150,50 @@ namespace MainAPI.Business.Spyder
 
         public async Task<Missing> GetMissingByID(Guid id) =>
                   await _unitOfWork.Missings.Find(id);
+        
+        public async Task<ResponseMessage<MissingDetails>> UpdateRecord(RequestObject<string> requestObject)
+        {
+            ResponseMessage<MissingDetails> responseMessage = new ResponseMessage<MissingDetails>();
+            try
+            {
+                Guid userID = Guid.Parse(requestObject.UserID);
+                Guid itemID = Guid.Parse(requestObject.ItemID);
+
+                Missing missing = await GetMissingByID(itemID);
+                if (missing.CreatedBy != userID || missing.Update != default)
+                {
+                    responseMessage.Message = "Update failed";
+                    responseMessage.StatusCode = 201;
+                }
+
+                missing.Update = requestObject.Data;
+                missing.UpdateTime = DateTime.Now;
+
+                _unitOfWork.Missings.Update(missing);
+                if (await _unitOfWork.Commit() >= 1)
+                {
+
+                    MissingDetails missingDetails = new MissingDetails()
+                    {
+                        UpdateDay = missing.UpdateTime.ToString("d"),
+                        UpdateTime = missing.UpdateTime.ToString("t"),
+                        Update = missing.Update
+                    };
+
+                    responseMessage.Data = missingDetails;
+                    responseMessage.Message = "Update successful";
+                    responseMessage.StatusCode = 200;
+                }
+                
+            }
+            catch (Exception)
+            {
+                responseMessage.Message = "Update failed";
+                responseMessage.StatusCode = 1101;
+            }
+
+            return responseMessage;
+        }
         public async Task<ResponseMessage<Guid>> Create(MissingVM missingVM)
         {
             ResponseMessage<Guid> responseMessage = new ResponseMessage<Guid>();
@@ -199,18 +246,18 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.Data = Missing.ID;
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

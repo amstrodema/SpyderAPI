@@ -28,7 +28,7 @@ namespace MainAPI.Business.Spyder.Feature
         public async Task<IEnumerable<FeatureType>> GetFeatureTypesByGroupCode(string groupCode)
         {
             var grp = await _unitOfWork.FeatureGroups.GetFeatureGroupByCode(groupCode);
-            return await GetFeatureTypesByGroup(grp.ID);
+            return (await GetFeatureTypesByGroup(grp.ID)).OrderBy(p => p.Name);
         }
         public async Task<ResponseMessage<FeatureType>> Create(FeatureType FeatureType)
         {
@@ -43,18 +43,18 @@ namespace MainAPI.Business.Spyder.Feature
                 {
                     responseMessage.Data = FeatureType;
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

@@ -80,7 +80,7 @@ namespace MainAPI.Business.Spyder
                         await Delete(getVote.ID);
 
                         responseMessage.StatusCode = 200;
-                        responseMessage.Message = "Operation successful!";
+                        responseMessage.Message = "Vote Cancelled!";
                     responseMessage.Data = await CheckVotes(vote.ItemID);
                         return responseMessage;
                     }
@@ -112,12 +112,12 @@ namespace MainAPI.Business.Spyder
 
                     await petitionBusiness.Approve(vote.ItemID);
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Failed!";
                 }
                 responseMessage.Data = await CheckVotes(vote.ItemID);
 
@@ -125,7 +125,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
                 responseMessage.Data = await CheckVotes(vote.ItemID);
             }
 

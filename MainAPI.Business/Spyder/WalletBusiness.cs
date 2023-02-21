@@ -39,6 +39,8 @@ namespace MainAPI.Business.Spyder
             ResponseMessage<Wallet> responseMessage = new ResponseMessage<Wallet>();
             Wallet wallet = await _unitOfWork.Wallets.GetWalletByUserID(userID);
             User user = await _unitOfWork.Users.Find(userID);
+
+            bool isChanged = false;
             try
             {
                 if (!user.IsActivated)
@@ -47,15 +49,36 @@ namespace MainAPI.Business.Spyder
                     {
                         Params param = await _unitOfWork.Params.GetParamByCode("activation_cost");
                         decimal activation_cost = decimal.Parse(param.Value);
+                        isChanged = true;
 
                         wallet.ActivationCost = activation_cost;
-                        _unitOfWork.Wallets.Update(wallet);
-                        await _unitOfWork.Commit();
                     }
                     catch (Exception)
                     {
+                        throw;
                     }
                 }
+
+                if (wallet.BonusDeadline < DateTime.Now)
+                {
+                    wallet.Bonus = 0;
+                    isChanged = true;
+                }
+
+                try
+                {
+                    if (isChanged)
+                    {
+                        _unitOfWork.Wallets.Update(wallet);
+                        await _unitOfWork.Commit();
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
                 wallet.Ref = await CalculateRefPayment(userID);
                 responseMessage.Data = wallet;
 
@@ -277,7 +300,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -302,7 +325,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -324,7 +347,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
                 return responseMessage;
             }
 
@@ -352,10 +375,23 @@ namespace MainAPI.Business.Spyder
                     SenderID = senderID
                 };
 
-                if (payerWallet.Spy >= newTransaction.Amount)
+                if (payerWallet.BonusDeadline < DateTime.Now)
                 {
+                    payerWallet.Bonus = 0;
+                }
+
+                if (payerWallet.Spy + payerWallet.Bonus >= newTransaction.Amount)
+                {
+
                     spyderWallet.Spy += newTransaction.Amount;
-                    payerWallet.Spy -= newTransaction.Amount;
+
+                    payerWallet.Bonus -= newTransaction.Amount;
+
+                    if (payerWallet.Bonus < 0)
+                    {
+                        payerWallet.Spy += payerWallet.Bonus;
+                        payerWallet.Bonus = 0;
+                    }
 
                     Notification payerNotification = new Notification()
                     {
@@ -366,7 +402,7 @@ namespace MainAPI.Business.Spyder
                         IsActive = true,
                         IsRead = false,
                         IsSpyder = true,
-                        Message = $"Debit: {newTransaction.SenderRefCode} Amt: {newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} Desc: PYT/SPYDER TrxID: {newTransaction.ID}. Bal:{payerWallet.Spy}"
+                        Message = $"Debit: {newTransaction.SenderRefCode} Amt: {newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} Desc: PYT/SPYDER TrxID: {newTransaction.ID}. SPY Bal:{payerWallet.Spy} SPY Bonus:{payerWallet.Bonus}"
 
                     };
 
@@ -532,7 +568,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
             return responseMessage;
         }
@@ -645,7 +681,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
             return responseMessage;
         }
@@ -730,11 +766,9 @@ namespace MainAPI.Business.Spyder
                 {
                     LegOneUserID = referralWallet.UserID,
                     LegTwoUserID = referralWallet.LegOneUserID,
-                    Spy = 500,
                     ID = Guid.NewGuid(),
                     Address = GenService.RandomGen50Code(),
                     DateCreated = DateTime.Now,
-                    Gem = 10000,
                     IsActive = false
 
                 };

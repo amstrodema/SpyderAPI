@@ -79,10 +79,23 @@ namespace MainAPI
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{appTitle} {v1}");
                     c.RoutePrefix = string.Empty;
+                    
                 });
-            }
 
-            //  app.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage();
+            }
+            ///To Do: Remove
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{appTitle} {v1}");
+                c.RoutePrefix = string.Empty;
+
+            });
+            app.UseDeveloperExceptionPage();
+            ///To Do: End Remove
+
             app.UseRouting();
 
             app.UseAuthorization();

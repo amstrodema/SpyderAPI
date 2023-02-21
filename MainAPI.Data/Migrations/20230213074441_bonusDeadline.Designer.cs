@@ -4,14 +4,16 @@ using MainAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MainAPI.Data.Migrations
 {
     [DbContext(typeof(MainAPIContext))]
-    partial class MainAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20230213074441_bonusDeadline")]
+    partial class bonusDeadline
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -872,12 +874,6 @@ namespace MainAPI.Data.Migrations
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Update")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("ID");
 

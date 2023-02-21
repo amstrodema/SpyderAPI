@@ -3,6 +3,7 @@ using MainAPI.Models;
 using MainAPI.Models.Comment.Spyder;
 using MainAPI.Models.Spyder;
 using MainAPI.Models.ViewModel.Spyder;
+using MainAPI.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,17 +32,19 @@ namespace MainAPI.Business.Spyder
                   await _unitOfWork.Comments.GetCommentsByItemID(itemID);
         public async Task<IEnumerable<CommentVM>> GetCommentVMsByItemID(Guid itemID)
         {
-            return from comment in await _unitOfWork.Comments.GetCommentsByItemID(itemID)
-                   where comment.IsActive
-                   join user in await _unitOfWork.Users.GetAll() on comment.UserID equals user.ID
-                   select new CommentVM()
-                   {
-                       ID = comment.ID,
-                       CommenterName = user.Username,
-                       DateCreated = comment.DateCreated.ToString("f"),
-                       Details = comment.Details,
-                       UserID = user.ID
-                   };
+            return (from comment in await _unitOfWork.Comments.GetCommentsByItemID(itemID)
+                    where comment.IsActive
+                    join user in await _unitOfWork.Users.GetAll() on comment.UserID equals user.ID
+                    select new CommentVM()
+                    {
+                        ID = comment.ID,
+                        CommenterName = user.Username,
+                        DateCreated = comment.DateCreated.ToString("f"),
+                        Details = comment.Details,
+                        UserID = user.ID,
+                        Image = user.Image == null ? "assets/images/avatar-1.png" : ImageService.GetImageFromFolder(user.Image, "Profile"),
+                        Date = comment.DateCreated
+                    }).OrderByDescending(p => p.Date);
         }
 
         public async Task<ResponseMessage<IEnumerable<CommentVM>>> Comment(RequestObject<Comment> requestObject) 
@@ -99,19 +102,19 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.Data = await GetCommentVMsByItemID(comment.ItemID);
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
 
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

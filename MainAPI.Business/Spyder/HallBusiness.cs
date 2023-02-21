@@ -42,18 +42,18 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.Data = hall;
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -91,15 +91,18 @@ namespace MainAPI.Business.Spyder
                 var x = from petition in petitions
                         where petition.IsApproved
                         join hall in await _unitOfWork.Halls.GetHallsByRoute( route) on petition.HallID equals hall.ID
+                        join vote in await _unitOfWork.Votes.GetAll() on petition.ID equals vote.ItemID into votes
                         select new PetitionVM()
                         {
                             ID = petition.ID,
                             Brief = petition.Brief,
                             HallName = hall.Name,
                             RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
-                            RecordOwnerName = petition.RecordOwnerName
+                            RecordOwnerName = petition.RecordOwnerName,
+                            TotalUpVotes = votes.Where(p => p.IsReact && p.IsLike).Count()
                         };
 
+                x = x.OrderByDescending(i => i.TotalUpVotes);
                 return x;
             }
             
@@ -138,6 +141,7 @@ namespace MainAPI.Business.Spyder
                     join hall in await _unitOfWork.Halls.GetHallsByRoute(route) on petition.HallID equals hall.ID
                     join personalVote in await _unitOfWork.Votes.GetVotesByUserID(userID) on petition.ID equals personalVote.ItemID into votes
                     from thisVote in votes.DefaultIfEmpty()
+                    join vote in await _unitOfWork.Votes.GetAll() on petition.ID equals vote.ItemID into voters
                     select new PetitionVM()
                     {
                         ID = petition.ID,
@@ -148,8 +152,11 @@ namespace MainAPI.Business.Spyder
                         IsLike = thisVote == default ? petition.IsLike : thisVote.IsLike,
                         IsReact = thisVote == default ? petition.IsReact : thisVote.IsReact,
                         RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
-                        RecordOwnerName = petition.RecordOwnerName
+                        RecordOwnerName = petition.RecordOwnerName,
+                        TotalUpVotes = voters.Where(p => p.IsReact && p.IsLike).Count()
                     };
+
+            x = x.OrderByDescending(i => i.TotalUpVotes);
 
             return x;
         }

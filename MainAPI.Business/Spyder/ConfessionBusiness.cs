@@ -79,7 +79,7 @@ namespace MainAPI.Business.Spyder
                 catch (Exception)
                 {
                     res.StatusCode = 1018;
-                    res.Message = "Something went wrong. Try Again!";
+                    res.Message = "Failed. Try Again!";
                     return res;
                 }
                 try
@@ -132,7 +132,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 res.StatusCode = 1018;
-                res.Message = "Something went wrong. Try Again!";
+                res.Message = "Failed. Try Again!";
             }
             return res;
 
@@ -178,18 +178,18 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.Data = Confession.ID;
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

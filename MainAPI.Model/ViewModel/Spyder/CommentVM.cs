@@ -13,5 +13,7 @@ namespace MainAPI.Models.ViewModel.Spyder
         public string CommenterName { get; set; }
         public string Details { get; set; }
         public string DateCreated { get; set; }
+        public DateTime Date { get; set; }
+        public string Image { get; set; }
     }
 }

@@ -39,8 +39,7 @@ namespace MainAPI.Business.Spyder
                                 City = mar.City,
                                 CountryID = mar.CountryID,
                                 CreatedBy = mar.CreatedBy,
-                                DateCreated = mar.DateCreated,
-                                DateModified = mar.DateModified,
+                                DateCreated = DateTime.Parse(mar.WeddingDate),
                                 GroomFName = mar.GroomFName,
                                 GroomLName = mar.GroomLName,
                                 ID = mar.ID,
@@ -79,7 +78,7 @@ namespace MainAPI.Business.Spyder
         {
             MarriageVM marriageVM = new MarriageVM()
             {
-                featureVMs = (await featureBusiness.GetFeaturesByItemID(id)).ToList(),
+                featureVMs = (await featureBusiness.GetFeaturesByItemID(id)).OrderBy(p=> p.FeatureType).ToList(),
                 marriage = await GetMarriageByID(id),
             };
             return marriageVM;
@@ -136,18 +135,18 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.Data = marriage.ID;
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Operation not successful!";
+                    responseMessage.Message = "Not successful!";
                 }
             }
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

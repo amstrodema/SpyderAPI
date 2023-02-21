@@ -45,6 +45,24 @@ namespace MainAPI.Business.Spyder
             var marriages = await marriageBusiness.GetMarriages();
             var deaths = await deathBusiness.GetDeaths();
 
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                marriages = marriages.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
+
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                deaths = deaths.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
+
 
             //trendingVM.NewRegistration = (await _unitOfWork.Users.GetAll()).Count();
             //trendingVM.Earnings = (from transaction in await _unitOfWork.Transactions.GetAll()
@@ -60,6 +78,16 @@ namespace MainAPI.Business.Spyder
             try
             {
                 var petitionz = await petitionBusiness.GetPetitions();
+
+                try
+                {
+                    Guid countryID = Guid.Parse(requestObject.CountryID);
+                    petitionz = petitionz.Where(c => c.PetitionCountryID == countryID).ToList();
+                }
+                catch (Exception)
+                {
+                }
+
                 var hallRecords = (from petition in petitionz
                                    where petition.IsApproved
                                   select petition).ToList();
@@ -85,7 +113,7 @@ namespace MainAPI.Business.Spyder
             }
 
 
-            var petitions = (await petitionBusiness.GetPetitionVMs(requestObject)).ToList();
+            var petitions = (await petitionBusiness.GetPetitionVMs(requestObject)).OrderByDescending(p=> p.TotalUpVotes).ToList();
 
             trendingVM.PetitionVMs = petitions.Take(5);
             trendingVM.Marriages = marriages.Take(5);
@@ -93,24 +121,73 @@ namespace MainAPI.Business.Spyder
 
 
             trendingVM.Missing = (await missingBusiness.GetMissingByItemTypeID(new RequestObject<int>() { Data = 1, ItemID = "All" })).ToList();
+
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                trendingVM.Missing = trendingVM.Missing.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.MissingRecord = trendingVM.Missing.Count();
             trendingVM.Missing = trendingVM.Missing.Take(5);
 
             trendingVM.Stolen = (await missingBusiness.GetMissingByItemTypeID(new RequestObject<int>() { Data = 2, ItemID = "All" })).ToList();
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                trendingVM.Stolen = trendingVM.Stolen.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.StolenRecord = trendingVM.Stolen.Count();
             trendingVM.Stolen = trendingVM.Stolen.Take(5);
 
             var found = (await missingBusiness.GetMissingByItemTypeID(new RequestObject<int>() { Data = 3, ItemID = "All" })).ToList();
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                found = found.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.FoundRecord = found.Count();
 
             trendingVM.ConfessionVMs = (await confessionBusiness.GetConfessionHeaders(new RequestObject<int>() { Data = 1, ItemID = "All" })).ToList();
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                trendingVM.ConfessionVMs = trendingVM.ConfessionVMs.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.ConfessionRecord = trendingVM.ConfessionVMs.Count();
             trendingVM.ConfessionVMs = trendingVM.ConfessionVMs.Take(5);
 
-            var scammers = (await confessionBusiness.GetConfessionHeaders(new RequestObject<int>() { Data = 2, ItemID = "All" })).ToList();
+            var scammers = (await confessionBusiness.GetConfessionHeaders(new RequestObject<int>() { Data = 3, ItemID = "All" })).ToList();
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                scammers = scammers.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.ScammersRecord = scammers.Count();
 
-            var whistleBlower = (await confessionBusiness.GetConfessionHeaders(new RequestObject<int>() { Data = 3, ItemID = "All" })).ToList();
+            var whistleBlower = (await confessionBusiness.GetConfessionHeaders(new RequestObject<int>() { Data = 2, ItemID = "All" })).ToList();
+            try
+            {
+                Guid countryID = Guid.Parse(requestObject.CountryID);
+                whistleBlower = whistleBlower.Where(c => c.CountryID == countryID).ToList();
+            }
+            catch (Exception)
+            {
+            }
             trendingVM.WhistleBlowerRecord = whistleBlower.Count();
 
             trendingVM.MarriedRecord = marriages.Count();
@@ -701,7 +778,7 @@ namespace MainAPI.Business.Spyder
             {
                 Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
 
-                if (!settings.IsAllowAccess)
+                if (!settings.IsAllowAccess && !isUser)
                 {
                     responseMessage.StatusCode = 201;
                     responseMessage.Message = "Profile is locked";
@@ -792,7 +869,14 @@ namespace MainAPI.Business.Spyder
                               };
                 profileVMs.AddRange(missing);
 
-                var confession = from record in await _unitOfWork.Confessions.GetAll()
+
+                var conf = await _unitOfWork.Confessions.GetAll();
+                if (!isUser)
+                {
+                    conf = conf.Where(o => !o.IsAnonymous).ToList();
+                }
+
+                var confession = from record in conf
                                  where record.CreatedBy == userID
                                  join like in await _unitOfWork.Likes.GetAll() on record.ID equals like.ItemID into recordLikes
 
@@ -886,7 +970,7 @@ namespace MainAPI.Business.Spyder
                     return "";
             }
         }
-        public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithComment(Guid userID)
+        public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithComment(Guid userID, bool isUser)
         {
             ResponseMessage<List<ProfileVM>> responseMessage = new ResponseMessage<List<ProfileVM>>();
             try
@@ -894,7 +978,7 @@ namespace MainAPI.Business.Spyder
 
                 Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
 
-                if (!settings.IsAllowAccess)
+                if (!settings.IsAllowAccess && !isUser)
                 {
                     responseMessage.StatusCode = 201;
                     responseMessage.Message = "Profile is locked";
@@ -1029,7 +1113,7 @@ namespace MainAPI.Business.Spyder
 
             return responseMessage;
         }
-        public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithReaction(Guid userID)
+        public async Task<ResponseMessage<List<ProfileVM>>> GetProfileContentWithReaction(Guid userID, bool isUser)
         {
             ResponseMessage<List<ProfileVM>> responseMessage = new ResponseMessage<List<ProfileVM>>();
 
@@ -1037,7 +1121,7 @@ namespace MainAPI.Business.Spyder
             {
                 Settings settings = await _unitOfWork.Settings.GetByUserID(userID);
 
-                if (!settings.IsAllowAccess)
+                if (!settings.IsAllowAccess && !isUser)
                 {
                     responseMessage.StatusCode = 201;
                     responseMessage.Message = "Profile is locked";

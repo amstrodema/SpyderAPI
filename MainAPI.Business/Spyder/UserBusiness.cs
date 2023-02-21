@@ -33,7 +33,7 @@ namespace MainAPI.Business.Spyder
 
         public async Task<User> GetUserByID(Guid id) =>
                   await _unitOfWork.Users.Find(id);
-        public async Task<ResponseMessage<ProfileVM>> GetUserProfile(Guid id)
+        public async Task<ResponseMessage<ProfileVM>> GetUserProfile(Guid id, bool isUser)
         {
             ResponseMessage<ProfileVM> responseMessage = new ResponseMessage<ProfileVM>();
             try
@@ -48,7 +48,7 @@ namespace MainAPI.Business.Spyder
                 }
                 Settings settings = await _unitOfWork.Settings.GetByUserID(user.ID);
 
-                if (!settings.IsAllowAccess)
+                if (!settings.IsAllowAccess && !isUser)
                 {
                     responseMessage.StatusCode = 201;
                     responseMessage.Message = "Profile is locked";
@@ -64,8 +64,8 @@ namespace MainAPI.Business.Spyder
                     City = user.City,
                     Country = (await _unitOfWork.Countries.Find(user.CountryID)).Name,
                     Image = user.Image == null ? "assets/images/avatar-1.png": ImageService.GetImageFromFolder(user.Image, "Profile"),
-                Phone = settings.IsShowPhoneNo ? user.Phone : "N/A",
-                    Email = settings.IsShowEmail ? user.Email : "N/A"
+                Phone = settings.IsShowPhoneNo || isUser ? user.Phone : "N/A",
+                    Email = settings.IsShowEmail || isUser ? user.Email : "N/A"
                 };
                 responseMessage.StatusCode = 200;
                 responseMessage.Data = profile;
@@ -242,9 +242,6 @@ namespace MainAPI.Business.Spyder
 
                 }
 
-                wallet.Spy = await SetParams("initial_spy", "Initial SPY", "10");
-                wallet.Gem = await SetParams("initial_gem", "Initial Gem", "100000");
-
                 Settings settings = new Settings()
                 {
                     ID = Guid.NewGuid(),
@@ -391,22 +388,23 @@ namespace MainAPI.Business.Spyder
         }
         private async Task<Wallet> SetSystemDefaults(Guid defaultCountryID)
         {
-
+            await SetParams("initial_spy", "Initial SPY", "50000");
+            await SetParams("initial_gem", "Initial Gem", "100000");
             await SetParams("spy_gem_exchange", "Gem to SPY rate", "100000");
             await SetParams("spy_purchase_divider", "Gem divider to buy SPY", "1000");
             await SetParams("min_withrawal", "Minimum Withdrawal", "3000");
-            await SetParams("spy_naira_exchange", "SPY to Naira", "100");
-            await SetParams("vote_cost", "Vote Cost", "1");
+            await SetParams("spy_naira_exchange", "SPY to Naira", "1");
+            await SetParams("vote_cost", "Vote Cost", "100");
             await SetParams("gem_gain_percentage", "Percentage Gem Gain Per Action", "1");
 
-            await SetParams("comment_cost", "Comment Cost", "0.1");
-            await SetParams("like_action_cost", "Like Action Cost", "0.05");
+            await SetParams("comment_cost", "Comment Cost", "10");
+            await SetParams("like_action_cost", "Like Action Cost", "5");
             await SetParams("marriage_cost", "Marriage Cost", "10");
             await SetParams("death_cost", "Death Cost", "10");
             await SetParams("missing_cost", "Missing Cost", "5");
-            await SetParams("confession_cost", "Confession Cost", "10");
-            await SetParams("gallery_link_cost", "Gallery Link Cost", "0.1");
-            await SetParams("gallery_image_cost", "Gallery Image Cost", "0.2");
+            await SetParams("confession_cost", "Confession Cost", "100");
+            await SetParams("gallery_link_cost", "Gallery Link Cost", "10");
+            await SetParams("gallery_image_cost", "Gallery Image Cost", "20");
             await SetParams("systemIsUP", "System Availability", "true");
 
             await SetParams("network_fee_percentage", "Network Fee", "0.1");
@@ -575,7 +573,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -613,8 +611,24 @@ namespace MainAPI.Business.Spyder
                 if (user == null)
                 {
                     responseMessage.StatusCode = 201;
-                    responseMessage.Message = "Log in unsuccessful";
+                    responseMessage.Message = "Log in not successful";
                     return responseMessage;
+                }
+
+
+                try
+                {
+                    Params param = await _unitOfWork.Params.GetParamByCode("systemIsUP");
+                    if (param.Value != "true")
+                    {
+                        responseMessage.StatusCode = 209;
+                        responseMessage.Message = "System Clean Up In Progress...Try later!";
+                        return responseMessage;
+                    }
+                }
+                catch (Exception)
+                {
+                    throw;
                 }
 
                 if (login.Portal > 0)
@@ -706,7 +720,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception e)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!" + e;
+                responseMessage.Message = "Error. Try Again!" + e;
             }
 
             return responseMessage;
@@ -786,6 +800,11 @@ namespace MainAPI.Business.Spyder
                     user.DateModified = DateTime.Now;
                     wallet.IsActive = true;
                     wallet.DateModified = DateTime.Now;
+
+                    wallet.Bonus = await SetParams("initial_spy", "Initial SPY", "50000");
+                    wallet.BonusDeadline = DateTime.Now.AddDays(30);
+                    wallet.Gem = await SetParams("initial_gem", "Initial Gem", "100000");
+
                     payment.DateCreated = DateTime.Now;
                     payment.ID = Guid.NewGuid();
 
@@ -815,7 +834,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -862,7 +881,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;
@@ -913,7 +932,7 @@ namespace MainAPI.Business.Spyder
             catch (Exception)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Something went wrong. Try Again!";
+                responseMessage.Message = "Failed. Try Again!";
             }
 
             return responseMessage;

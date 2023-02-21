@@ -58,8 +58,8 @@ namespace MainAPI.Controllers.Spyder
         {
             var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
             bool isUser = true;
-
-            if (rez.StatusCode != 200)
+           
+            if (userID != profileUserID || rez.StatusCode != 200)
             {
                 isUser = false;
             }
@@ -68,16 +68,28 @@ namespace MainAPI.Controllers.Spyder
             return Ok(profileData);
         }
         [HttpGet("GetProfileContentWithComment")]
-        public async Task<ActionResult> GetProfileContentWithComment(Guid userID)
+        public async Task<ActionResult> GetProfileContentWithComment(Guid userID, Guid appID, Guid profileUserID)
         {
-            var profileData = await genericBusiness.GetProfileContentWithComment(userID);
+            var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
+            bool isUser = true;
+            if (userID != profileUserID || rez.StatusCode != 200)
+            {
+                isUser = false;
+            }
+            var profileData = await genericBusiness.GetProfileContentWithComment(profileUserID, isUser);
             return Ok(profileData);
         }
         [HttpGet("GetProfileContentWithReaction")]
-        public async Task<ActionResult> GetProfileContentWithReaction(Guid userID)
+        public async Task<ActionResult> GetProfileContentWithReaction(Guid userID, Guid appID, Guid profileUserID)
         {
+            var rez = await ValidateLogIn.Validate(unitOfWork, appID, userID);
+            bool isUser = true;
+            if (userID != profileUserID || rez.StatusCode != 200)
+            {
+                isUser = false;
+            }
 
-            var profileData = await genericBusiness.GetProfileContentWithReaction(userID);
+            var profileData = await genericBusiness.GetProfileContentWithReaction(profileUserID, isUser);
             return Ok(profileData);
         }
     }

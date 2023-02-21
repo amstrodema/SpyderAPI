@@ -33,6 +33,11 @@ namespace MainAPI.Business.Spyder
             ResponseMessage<IEnumerable<Withdrawal>> responseMessage = new ResponseMessage<IEnumerable<Withdrawal>>();
             try
             {
+                var wallet = await _unitOfWork.Wallets.GetWalletByUserID(userID);
+                if (wallet.IsBanned || wallet.IsLocked || !wallet.IsActive)
+                {
+                    throw new Exception();
+                }
                 decimal amount = await walletBusiness.ProcessRefPayment(userID);
 
                 Withdrawal withdrawal = new Withdrawal()

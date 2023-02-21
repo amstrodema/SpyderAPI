@@ -75,7 +75,7 @@ namespace MainAPI.Business.Spyder
 
                         responseMessage.StatusCode = 200;
                         responseMessage.Data = await CheckLikes(like.ItemID);
-                        responseMessage.Message = "Operation successful!";
+                        responseMessage.Message = "Successful!";
                         return responseMessage;
                     }
                     else
@@ -108,7 +108,7 @@ namespace MainAPI.Business.Spyder
                 {
                     responseMessage.StatusCode = 200;
                     responseMessage.Data = await CheckLikes(like.ItemID);
-                    responseMessage.Message = "Operation successful!";
+                    responseMessage.Message = "Successful!";
                 }
                 else
                 {
