@@ -55,7 +55,7 @@ namespace MainAPI.Business.Spyder
                        Date = confession.DateCreated.ToString("MMM")+" "+ confession.DateCreated.ToString("dd")+", "+ confession.DateCreated.ToString("yyyy"),
                        Time = confession.DateCreated.ToString("t"),
                        Details = confession.Details.Length <=306? confession.Details: confession.Details.Substring(0,306),
-                       Image = ImageService.GetImageFromFolder(confession.Image, "Confession"),
+                       Image = ImageService.GetSmallImageFromFolder(confession.Image, "Confession"),
                        IsAnonymous = confession.IsAnonymous,
                        Title = confession.Title,
                        DateFilter = confession.DateCreated

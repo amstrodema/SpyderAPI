@@ -10,5 +10,6 @@ namespace MainAPI.Data.Interface.Spyder
     public interface IWithdrawal : IGeneric<Withdrawal>
     {
         Task<IEnumerable<Withdrawal>> GetWithdrawalsByUserID(Guid userID);
+        Task<IEnumerable<Withdrawal>> GetWithdrawalsByStatusCode(int statusCode);
     }
 }

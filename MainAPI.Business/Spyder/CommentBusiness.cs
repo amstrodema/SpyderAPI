@@ -42,7 +42,7 @@ namespace MainAPI.Business.Spyder
                         DateCreated = comment.DateCreated.ToString("f"),
                         Details = comment.Details,
                         UserID = user.ID,
-                        Image = user.Image == null ? "assets/images/avatar-1.png" : ImageService.GetImageFromFolder(user.Image, "Profile"),
+                        Image = user.Image == null ? "assets/images/avatar-1.png" : ImageService.GetSmallImageFromFolder(user.Image, "Profile"),
                         Date = comment.DateCreated
                     }).OrderByDescending(p => p.Date);
         }

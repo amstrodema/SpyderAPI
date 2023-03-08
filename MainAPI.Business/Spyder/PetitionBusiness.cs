@@ -61,7 +61,7 @@ namespace MainAPI.Business.Spyder
                             IsApproved = petition.IsApproved,
                             IsLike = false,
                             IsReact = false,
-                            RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
+                            RecordOwnerImage = ImageService.GetSmallImageFromFolder(petition.RecordOwnerImage, "Petition"),
                             RecordOwnerName = petition.RecordOwnerName,
                             RecordOwnerStory = petition.RecordOwnerStory,
                             Time = petition.DateCreated.ToString("t"),
@@ -105,7 +105,7 @@ namespace MainAPI.Business.Spyder
                         IsApproved = petition.IsApproved,
                         IsLike = thisVote == default ? petition.IsLike : thisVote.IsLike,
                         IsReact = thisVote == default ? petition.IsReact : thisVote.IsReact,
-                        RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
+                        RecordOwnerImage = ImageService.GetSmallImageFromFolder(petition.RecordOwnerImage, "Petition"),
                         RecordOwnerName = petition.RecordOwnerName,
                         RecordOwnerStory = petition.RecordOwnerStory,
                         Time = petition.DateCreated.ToString("t"),
@@ -261,7 +261,6 @@ namespace MainAPI.Business.Spyder
                         {
                             petition.ID = Guid.NewGuid();
                             petition.DateCreated = DateTime.Now;
-                            petition.PetitionCountryID = user.CountryID;
                             petition.RequiredVoters = hall.RequiredVotes;
                             petition.PetitionCost = hall.Cost;
 

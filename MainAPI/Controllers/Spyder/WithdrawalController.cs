@@ -34,6 +34,66 @@ namespace MainAPI.Controllers.Spyder
             var res = await _withdrawalBusiness.GetWithdrawals();
             return Ok(res);
         }
+
+        [HttpPost("GetWithdrawals")]
+        public async Task<ActionResult> GetWithdrawals(RequestObject<int> requestObject)
+        {
+            try
+            {
+                var rez = await ValidateLogIn.ValidateAdmin(unitOfWork, requestObject.AppID, Guid.Parse(requestObject.UserID), 5);
+                if (rez.StatusCode != 200)
+                {
+                    return Ok(rez);
+                }
+            }
+            catch (Exception)
+            {
+                return Ok("An error occured!");
+            }
+
+            var res = await _withdrawalBusiness.GetWithdrawals(requestObject.Data);
+            return Ok(res);
+        }
+
+        [HttpPost("PrintPayOut")]
+        public async Task<ActionResult> PrintPayOut(RequestObject<int> requestObject)
+        {
+            try
+            {
+                var rez = await ValidateLogIn.ValidateAdmin(unitOfWork, requestObject.AppID, Guid.Parse(requestObject.UserID), 5);
+                if (rez.StatusCode != 200)
+                {
+                    return Ok(rez);
+                }
+            }
+            catch (Exception)
+            {
+                return Ok("An error occured!");
+            }
+
+            var res = await _withdrawalBusiness.PrintPayOut(requestObject.Data);
+            return Ok(res);
+        }
+
+        [HttpPost("PayOut")]
+        public async Task<ActionResult> PayOut(RequestObject<string> requestObject)
+        {
+            try
+            {
+                var rez = await ValidateLogIn.ValidateAdmin(unitOfWork, requestObject.AppID, Guid.Parse(requestObject.UserID), 5);
+                if (rez.StatusCode != 200)
+                {
+                    return Ok(rez);
+                }
+            }
+            catch (Exception)
+            {
+                return Ok("An error occured!");
+            }
+
+            var res = await _withdrawalBusiness.PayOut();
+            return Ok(res);
+        }
         [HttpGet("GetWithdrawalsByUserID")]
         public async Task<ActionResult> GetWithdrawalsByUserID(Guid userID, Guid appID)
         {

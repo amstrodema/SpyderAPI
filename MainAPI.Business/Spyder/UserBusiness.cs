@@ -227,11 +227,9 @@ namespace MainAPI.Business.Spyder
                     {
                         LegOneUserID = referralWallet.UserID,
                         LegTwoUserID = referralWallet.LegOneUserID,
-                        Spy = 500,
                         ID = Guid.NewGuid(),
                         Address = GenService.RandomGen50Code(),
                         DateCreated = DateTime.Now,
-                        Gem = 10000,
                         IsActive = false
 
                     };
@@ -262,7 +260,7 @@ namespace MainAPI.Business.Spyder
 
 
                 // user.WalletID
-
+                wallet.IsActive = false;
                 wallet.LegOnePercentage = await SetParams("percentage1", "1st Leg Referral Percentage", "15");
                 wallet.LegTwoPercentage = await SetParams("percentage2", "2nd Leg Referral Percentage", "5");
                 wallet.ActivationCost = await SetParams("activation_cost", "Activation Cost", "1000");
@@ -390,24 +388,24 @@ namespace MainAPI.Business.Spyder
         {
             await SetParams("initial_spy", "Initial SPY", "50000");
             await SetParams("initial_gem", "Initial Gem", "100000");
-            await SetParams("spy_gem_exchange", "Gem to SPY rate", "100000");
-            await SetParams("spy_purchase_divider", "Gem divider to buy SPY", "1000");
-            await SetParams("min_withrawal", "Minimum Withdrawal", "3000");
+            await SetParams("spy_gem_exchange", "Gem to SPY rate", "1000");
+            await SetParams("spy_purchase_divider", "Gem divider to buy SPY", "10");
+            await SetParams("min_withrawal", "Minimum Withdrawal", "2500");
             await SetParams("spy_naira_exchange", "SPY to Naira", "1");
             await SetParams("vote_cost", "Vote Cost", "100");
-            await SetParams("gem_gain_percentage", "Percentage Gem Gain Per Action", "1");
+            await SetParams("gem_gain_percentage", "Percentage Gem Gain Per Action", "200");
 
-            await SetParams("comment_cost", "Comment Cost", "10");
-            await SetParams("like_action_cost", "Like Action Cost", "5");
-            await SetParams("marriage_cost", "Marriage Cost", "10");
-            await SetParams("death_cost", "Death Cost", "10");
-            await SetParams("missing_cost", "Missing Cost", "5");
+            await SetParams("comment_cost", "Comment Cost", "50");
+            await SetParams("like_action_cost", "Like Action Cost", "20");
+            await SetParams("marriage_cost", "Marriage Cost", "500");
+            await SetParams("death_cost", "Death Cost", "500");
+            await SetParams("missing_cost", "Missing Cost", "500");
             await SetParams("confession_cost", "Confession Cost", "100");
-            await SetParams("gallery_link_cost", "Gallery Link Cost", "10");
-            await SetParams("gallery_image_cost", "Gallery Image Cost", "20");
+            await SetParams("gallery_link_cost", "Gallery Link Cost", "50");
+            await SetParams("gallery_image_cost", "Gallery Image Cost", "100");
             await SetParams("systemIsUP", "System Availability", "true");
 
-            await SetParams("network_fee_percentage", "Network Fee", "0.1");
+            await SetParams("network_fee_percentage",  "Network Fee", "0.5");
 
 
 
@@ -438,12 +436,12 @@ namespace MainAPI.Business.Spyder
                 IsActive = true
             });
 
-            await SetUpHall("Hall of Legends", "hall-of-legends", "legends", 4000000, 190, userAdmin.CountryID, userAdmin.ID);
-            await SetUpHall("Hall of Heros", "hall-of-heros", "heros", 150000, 350, userAdmin.CountryID, userAdmin.ID);
-            await SetUpHall("Hall of Shame", "hall-of-shame", "hall-of-shame", 500000, 150, userAdmin.CountryID, userAdmin.ID);
-            await SetUpHall("Hall of Fame", "hall-of-fame", "hall-of-fame", 100000, 100, userAdmin.CountryID, userAdmin.ID);
-            await SetUpHall("Hall of Fallen Heros", "hall-of-fallen-heros", "hall-of-fallen-heros", 100000, 100, userAdmin.CountryID, userAdmin.ID);
-            await SetUpHall("Hall of the Unforgotten", "hall-of-the-unforgotten", "hall-of-the-unforgotten", 1000, 100, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of Legends", "hall-of-legends", "legends", 1000000, 15000, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of Heros", "hall-of-heros", "heros", 250000, 5000, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of Shame", "hall-of-shame", "hall-of-shame", 1000000, 15000, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of Fame", "hall-of-fame", "hall-of-fame", 100000, 5000, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of Fallen Heros", "hall-of-fallen-heros", "hall-of-fallen-heros", 100000, 5000, userAdmin.CountryID, userAdmin.ID);
+            await SetUpHall("Hall of the Unforgotten", "hall-of-the-unforgotten", "hall-of-the-unforgotten", 25000, 1000, userAdmin.CountryID, userAdmin.ID);
 
             Settings spyderSettings = new Settings()
             {
@@ -560,7 +558,7 @@ namespace MainAPI.Business.Spyder
                     //To do: Send verification link to email
 
                     responseMessage.StatusCode = 200;
-                    responseMessage.Message = "Email verification resent!";
+                    responseMessage.Message = "Email verification sent!";
                 }
                 else
                 {
@@ -800,8 +798,10 @@ namespace MainAPI.Business.Spyder
                     user.DateModified = DateTime.Now;
                     wallet.IsActive = true;
                     wallet.DateModified = DateTime.Now;
+                    wallet.IsLocked = false; //turn on for maker checker on activation payment
 
                     wallet.Bonus = await SetParams("initial_spy", "Initial SPY", "50000");
+                    wallet.Spy = 1000;
                     wallet.BonusDeadline = DateTime.Now.AddDays(30);
                     wallet.Gem = await SetParams("initial_gem", "Initial Gem", "100000");
 

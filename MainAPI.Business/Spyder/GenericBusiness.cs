@@ -213,7 +213,7 @@ namespace MainAPI.Business.Spyder
                                    select new SearchVM()
                                    {
                                        ID = record.ID,
-                                       Image = ImageService.GetImageFromFolder(record.RecordOwnerImage, "Petition"),
+                                       Image = ImageService.GetSmallImageFromFolder(record.RecordOwnerImage, "Petition"),
                                        Title = record.IsApproved ? $"{record.HallName}: {record.RecordOwnerName}" : $"Petition: {record.RecordOwnerName}",
                                        Brief = ShortestText(record.RecordOwnerStory),
                                        ValueType = record.IsApproved ? "Hall" : "Petition",
@@ -243,7 +243,7 @@ namespace MainAPI.Business.Spyder
                                    select new SearchVM()
                                    {
                                        ID = record.ID,
-                                       Image = ImageService.GetImageFromFolder(record.Image, "Confession"),
+                                       Image = ImageService.GetSmallImageFromFolder(record.Image, "Confession"),
                                        Title = record.Title,
                                        Brief = ShortestText(record.Details),
                                        ValueType = ResolveConfession(record.DialogueTypeNo),
@@ -275,7 +275,7 @@ namespace MainAPI.Business.Spyder
                      select new SearchVM()
                      {
                          ID = record.ID,
-                         Image = ImageService.GetImageFromFolder(record.Image, "Death"),
+                         Image = ImageService.GetSmallImageFromFolder(record.Image, "Death"),
                          Title = "Death: " + record.Name,
                          Brief = record.CauseOfDeath.Length > 30 ? ShortestText(record.CauseOfDeath) : ShortestText(record.DetailsOfPerson),
                          ValueType = "Death",
@@ -328,7 +328,7 @@ namespace MainAPI.Business.Spyder
                          select new SearchVM()
                          {
                              ID = record.ID,
-                             Image = ImageService.GetImageFromFolder(record.Image, "Missing"),
+                             Image = ImageService.GetSmallImageFromFolder(record.Image, "Missing"),
                              Title = $"{record.ItemTypeName}: " + record.Title,
                              Brief = ShortestText(record.Desc),
                              ValueType = record.ItemTypeName
@@ -351,7 +351,7 @@ namespace MainAPI.Business.Spyder
                          select new SearchVM()
                          {
                              ID = record.ID,
-                             Image = ImageService.GetImageFromFolder(record.Image, "Marriage"),
+                             Image = ImageService.GetSmallImageFromFolder(record.Image, "Marriage"),
                              Title = $"{record.BrideFName} weds {record.GroomFName}",
                              Brief = ShortestText(record.Toast),
                              ValueType = "Marriage"
@@ -398,7 +398,7 @@ namespace MainAPI.Business.Spyder
                                             select new SearchVM()
                                             {
                                                 ID = record.ID,
-                                                Image = ImageService.GetImageFromFolder(record.Image, "Marriage"),
+                                                Image = ImageService.GetSmallImageFromFolder(record.Image, "Marriage"),
                                                 Title = $"{record.BrideFName} weds {record.GroomFName}",
                                                 Brief = ShortestText(record.Toast),
                                                 ValueType = "Marriage"
@@ -415,7 +415,7 @@ namespace MainAPI.Business.Spyder
                                             select new SearchVM()
                                             {
                                                 ID = record.ID,
-                                                Image = ImageService.GetImageFromFolder(record.Image, "Missing"),
+                                                Image = ImageService.GetSmallImageFromFolder(record.Image, "Missing"),
                                                 Title = $"{record.ItemTypeName}: " + record.Title,
                                                 Brief = ShortestText(record.Desc),
                                                 ValueType = record.ItemTypeName
@@ -432,7 +432,7 @@ namespace MainAPI.Business.Spyder
                                             select new SearchVM()
                                             {
                                                 ID = record.ID,
-                                                Image = ImageService.GetImageFromFolder(record.Image, "Death"),
+                                                Image = ImageService.GetSmallImageFromFolder(record.Image, "Death"),
                                                 Title = "Death: " + record.Name,
                                                 Brief = record.CauseOfDeath.Length > 30 ? ShortestText(record.CauseOfDeath) : ShortestText(record.DetailsOfPerson),
                                                 ValueType = "Death",
@@ -449,7 +449,7 @@ namespace MainAPI.Business.Spyder
                                             select new SearchVM()
                                             {
                                                 ID = record.ID,
-                                                Image = ImageService.GetImageFromFolder(record.Image, "Confession"),
+                                                Image = ImageService.GetSmallImageFromFolder(record.Image, "Confession"),
                                                 Title = record.Title,
                                                 Brief = ShortestText(record.Details),
                                                 ValueType = ResolveConfession(record.DialogueTypeNo),
@@ -467,7 +467,7 @@ namespace MainAPI.Business.Spyder
                                             select new SearchVM()
                                             {
                                                 ID = record.ID,
-                                                Image = ImageService.GetImageFromFolder(record.RecordOwnerImage, "Petition"),
+                                                Image = ImageService.GetSmallImageFromFolder(record.RecordOwnerImage, "Petition"),
                                                 Title = record.IsApproved ? $"{record.HallName}: {record.RecordOwnerName}" : $"Petition: {record.RecordOwnerName}",
                                                 Brief = ShortestText(record.RecordOwnerStory),
                                                 ValueType = record.IsApproved ? "Hall" : "Petition",
@@ -490,7 +490,7 @@ namespace MainAPI.Business.Spyder
                                select new SearchVM()
                                {
                                    ID = record.ID,
-                                   Image = ImageService.GetImageFromFolder(record.Image, "Missing"),
+                                   Image = ImageService.GetSmallImageFromFolder(record.Image, "Missing"),
                                    Title = $"{record.ItemTypeName}: " + record.Title,
                                    Brief = ShortestText(record.Desc),
                                    ValueType = record.ItemTypeName
@@ -502,7 +502,7 @@ namespace MainAPI.Business.Spyder
                                select new SearchVM()
                                {
                                    ID = record.ID,
-                                   Image = ImageService.GetImageFromFolder(record.Image, "Marriage"),
+                                   Image = ImageService.GetSmallImageFromFolder(record.Image, "Marriage"),
                                    Title = $"{record.BrideFName} weds {record.GroomFName}",
                                    Brief = ShortestText(record.Toast),
                                    ValueType = "Marriage"

@@ -49,7 +49,7 @@ namespace MainAPI.Business.Spyder
                                 Status = mar.Status,
                                 ModifiedBy = mar.ModifiedBy,
                                 Type = mar.Type,
-                                Image = ImageService.GetImageFromFolder(mar.Image, "Marriage"),
+                                Image = ImageService.GetSmallImageFromFolder(mar.Image, "Marriage"),
                             };
             try
             {

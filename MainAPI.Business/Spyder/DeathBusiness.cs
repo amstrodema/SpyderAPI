@@ -41,7 +41,7 @@ namespace MainAPI.Business.Spyder
                              DeathDate = death.DeathDate,
                              DetailsOfPerson = death.DetailsOfPerson,
                              ID = death.ID,
-                             Image = ImageService.GetImageFromFolder(death.Image, "Death"),
+                             Image = ImageService.GetSmallImageFromFolder(death.Image, "Death"),
                              IsActive = death.IsActive,
                              ModifiedBy = death.ModifiedBy,
                              Name = death.Name,

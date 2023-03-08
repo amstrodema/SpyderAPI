@@ -97,7 +97,7 @@ namespace MainAPI.Business.Spyder
                             ID = petition.ID,
                             Brief = petition.Brief,
                             HallName = hall.Name,
-                            RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
+                            RecordOwnerImage = ImageService.GetSmallImageFromFolder(petition.RecordOwnerImage, "Petition"),
                             RecordOwnerName = petition.RecordOwnerName,
                             TotalUpVotes = votes.Where(p => p.IsReact && p.IsLike).Count()
                         };
@@ -151,7 +151,7 @@ namespace MainAPI.Business.Spyder
                         HallName = hall.Name,
                         IsLike = thisVote == default ? petition.IsLike : thisVote.IsLike,
                         IsReact = thisVote == default ? petition.IsReact : thisVote.IsReact,
-                        RecordOwnerImage = ImageService.GetImageFromFolder(petition.RecordOwnerImage, "Petition"),
+                        RecordOwnerImage = ImageService.GetSmallImageFromFolder(petition.RecordOwnerImage, "Petition"),
                         RecordOwnerName = petition.RecordOwnerName,
                         TotalUpVotes = voters.Where(p => p.IsReact && p.IsLike).Count()
                     };

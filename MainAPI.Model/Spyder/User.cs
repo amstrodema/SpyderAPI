@@ -20,6 +20,7 @@ namespace MainAPI.Models.Spyder
         public string EmailVerification { get; set; }
         public string ResetVerification { get; set; }
         public string Email { get; set; }
+        public bool IsBanned { get; set; }
         public bool IsActivated { get; set; }
         public bool IsActive { get; set; }
         public bool IsVerified { get; set; }

@@ -133,7 +133,7 @@ namespace MainAPI.Business.Spyder
                 var legOneWallets = await _unitOfWork.Wallets.GetWalletsByUnpiadLegOneUserID(userID);
                 var legTwoWallets = await _unitOfWork.Wallets.GetWalletsByUnpaidLegTwoUserID(userID);
 
-                var total = (from wallet in legOneWallets
+                var total = (from wallet in legOneWallets where !wallet.IsBanned && !wallet.IsLocked && wallet.IsActive
                              join user in await _unitOfWork.Users.GetAll() on wallet.UserID equals user.ID
                              where user.IsActivated
                              select new Wallet()
@@ -142,6 +142,7 @@ namespace MainAPI.Business.Spyder
                              }).Sum(p => p.Ref);
 
                 total += (from wallet in legTwoWallets
+                          where !wallet.IsBanned && !wallet.IsLocked && wallet.IsActive
                           join user in await _unitOfWork.Users.GetAll() on wallet.UserID equals user.ID
                           where user.IsActivated
                           select new Wallet()
@@ -696,7 +697,7 @@ namespace MainAPI.Business.Spyder
                               {
                                   RefCode = wallet.RefCode,
                                   DateCreated = wallet.DateCreated,
-                                  IsActive = user.IsActivated,
+                                  IsActive = wallet.IsActive,
                                   LegOneUserID = wallet.LegOneUserID,
                                   UserID = wallet.UserID
                               };

@@ -4,19 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MainAPI.Models.Spyder
+namespace MainAPI.Models.ViewModel.Spyder
 {
-    public class Withdrawal
+    public class WithdrawalHybrid
     {
         public Guid ID { get; set; }
         public Guid UserID { get; set; }
+        public string RefCode { get; set; }
         public decimal Amount { get; set; }
-        public DateTime DateCreated { get; set; }
         public int StatusCode { get; set; }
         public string Status { get; set; }
-        public DateTime DateModified { get; set; }
-        public string BankName { get; set; }
-        public string BankAccountNumber { get; set; }
-        public string BankAccountName { get; set; }
+        public string UserStatus { get; set; }
+        public string DateRequested { get; set; }
+        public string DatePaid { get; set; }
+        public DateTime DateCreated { get; set; }
     }
 }

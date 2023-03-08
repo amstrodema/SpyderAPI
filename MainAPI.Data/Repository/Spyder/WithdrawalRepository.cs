@@ -15,5 +15,9 @@ namespace MainAPI.Data.Repository.Spyder
         {
             return await GetBy(u => u.UserID == userID);
         }
+        public async Task<IEnumerable<Withdrawal>> GetWithdrawalsByStatusCode(int statusCode)
+        {
+            return await GetBy(u => u.StatusCode == statusCode);
+        }
     }
 }

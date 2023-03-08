@@ -45,5 +45,7 @@ namespace MainAPI.Data.Repository.Spyder
             return await GetOneBy(u => u.ResetVerification == resetVerification);
         }
         public async Task<IEnumerable<User>> GetUsersByAccessLevel(int accessLevel) => await GetBy(u => u.AccessLevel == accessLevel);
+        public async Task<IEnumerable<User>> GetValidUsers() 
+            => await GetBy(u => u.IsActive && u.IsActivated && !u.IsBanned && u.IsVerified && !string.IsNullOrEmpty(u.BankAccountNumber) && !string.IsNullOrEmpty(u.BankAccountName) && !string.IsNullOrEmpty(u.BankName));
     }
 }

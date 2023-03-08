@@ -48,7 +48,7 @@ namespace MainAPI.Business.Spyder
                        select new Missing()
                        {
                            ID = missing.ID,
-                           Image = ImageService.GetImageFromFolder(missing.Image, "Missing"),
+                           Image = ImageService.GetSmallImageFromFolder(missing.Image, "Missing"),
                            Title = missing.Title,
                            Desc = missing.Desc == null || missing.Desc.Length < 76? missing.Desc : missing.Desc.Substring(0,74),
                            FullInfo = missing.FullInfo == null || missing.FullInfo.Length < 145? missing.FullInfo : missing.FullInfo.Substring(0,143),
@@ -254,10 +254,10 @@ namespace MainAPI.Business.Spyder
                     responseMessage.Message = "Not successful!";
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 responseMessage.StatusCode = 1018;
-                responseMessage.Message = "Failed. Try Again!";
+                responseMessage.Message = "Failed. Try Again! "+e;
             }
 
             return responseMessage;
