@@ -4,14 +4,16 @@ using MainAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MainAPI.Data.Migrations
 {
     [DbContext(typeof(MainAPIContext))]
-    partial class MainAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20230314174817_refinebankDetails")]
+    partial class refinebankDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

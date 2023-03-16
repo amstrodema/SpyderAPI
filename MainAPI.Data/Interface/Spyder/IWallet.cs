@@ -16,5 +16,6 @@ namespace MainAPI.Data.Interface.Spyder
         Task<List<Wallet>> GetWalletsByLegTwoUserID(Guid userID);
         Task<List<Wallet>> GetWalletsByUnpiadLegOneUserID(Guid userID);
         Task<List<Wallet>> GetWalletsByUnpaidLegTwoUserID(Guid userID);
+        Task<IEnumerable<Wallet>> GetValidWallets();
     }
 }

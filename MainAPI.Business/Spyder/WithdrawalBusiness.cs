@@ -43,15 +43,15 @@ namespace MainAPI.Business.Spyder
             }
 
             ResponseMessage<WithdrawalVM> responseMessage = new ResponseMessage<WithdrawalVM>();
-            var users = await _unitOfWork.Users.GetValidUsers();
+            var wallets = await _unitOfWork.Wallets.GetValidWallets();
             var withdrawals = (from withdrawal in withdrawls
-                               join user in users on withdrawal.UserID equals user.ID
+                               join user in wallets on withdrawal.UserID equals user.ID
                                select withdrawal).ToArray();
 
             int count = 1;
 
             var payrolls = from withdrw in withdrawals
-                     join user in users on withdrw.UserID equals user.ID
+                     join user in wallets on withdrw.UserID equals user.ID
                      select new Payroll()
                      {
                          Amount = withdrw.Amount.ToString(),
@@ -80,14 +80,14 @@ namespace MainAPI.Business.Spyder
         {
             var date = DateTime.Now;
             ResponseMessage<WithdrawalVM> responseMessage = new ResponseMessage<WithdrawalVM>();
-            var users = await _unitOfWork.Users.GetValidUsers();
+            var wallets = await _unitOfWork.Wallets.GetValidWallets();
             var withdrawals = (from withdrawal in await _unitOfWork.Withdrawals.GetWithdrawalsByStatusCode(1)
-                               join user in users on withdrawal.UserID equals user.ID
+                               join user in wallets on withdrawal.UserID equals user.ID
                                select withdrawal).ToArray();
 
             int count = 1;
             var payrolls = from withdrw in withdrawals
-                     join user in users on withdrw.UserID equals user.ID
+                     join user in wallets on withdrw.UserID equals user.ID
                      select new Payroll()
                      {
                          Amount = withdrw.Amount.ToString(),
@@ -104,9 +104,9 @@ namespace MainAPI.Business.Spyder
                 withdrawals[i].DateModified = date;
                 withdrawals[i].Status = "Paid";
                 withdrawals[i].StatusCode = 5;
-                withdrawals[i].BankAccountName = users.FirstOrDefault(user=> user.ID == withdrawals[i].UserID).BankAccountName;
-                withdrawals[i].BankName = users.FirstOrDefault(user => user.ID == withdrawals[i].UserID).BankName;
-                withdrawals[i].BankAccountNumber = users.FirstOrDefault(user => user.ID == withdrawals[i].UserID).BankAccountNumber;
+                withdrawals[i].BankAccountName = wallets.FirstOrDefault(user=> user.ID == withdrawals[i].UserID).BankAccountName;
+                withdrawals[i].BankName = wallets.FirstOrDefault(user => user.ID == withdrawals[i].UserID).BankName;
+                withdrawals[i].BankAccountNumber = wallets.FirstOrDefault(user => user.ID == withdrawals[i].UserID).BankAccountNumber;
             }
 
             _unitOfWork.Withdrawals.UpdateMultiple(withdrawals);

@@ -506,8 +506,9 @@ namespace MainAPI.Business.Spyder
                     senderWallet.Spy -= newTransaction.Amount;
 
                     newTransaction.ReceiverRefCode = receiverWallet.RefCode;
-                    newTransaction.ReceiverID = receiverWallet.ID;
+                    newTransaction.ReceiverID = receiverWallet.UserID;
                     newTransaction.SenderWalletID = senderWallet.ID;
+                    newTransaction.SenderRefCode = senderWallet.RefCode;
                     newTransaction.TransactionCurrency = "SPY";
                     newTransaction.TransactionType = "Transfer";
                     newTransaction.ID = Guid.NewGuid();
@@ -526,7 +527,7 @@ namespace MainAPI.Business.Spyder
                         IsActive = true,
                         IsRead = false,
                         IsSpyder = true,
-                        Message = $"Debit: {newTransaction.SenderRefCode} Amt: {newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} Desc: Trf {newTransaction.ReceiverRefCode} TrxID: {newTransaction.ID}. Bal:{senderWallet.Spy}"
+                        Message = $"Debit:{newTransaction.SenderRefCode} Amt:{newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} Desc: Trf {newTransaction.ReceiverRefCode} TrxID: {newTransaction.ID}. Bal:{senderWallet.Spy}"
 
                     };
 
@@ -539,7 +540,7 @@ namespace MainAPI.Business.Spyder
                         IsActive = true,
                         IsRead = false,
                         IsSpyder = true,
-                        Message = $"Credit: {newTransaction.ReceiverRefCode} Amt: {newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} TRF: {newTransaction.SenderRefCode} TrxID: {newTransaction.ID}. Bal:{receiverWallet.Spy}"
+                        Message = $"Credit:{newTransaction.ReceiverRefCode} Amt:{newTransaction.Amount}SPY Date: {newTransaction.DateCreated.ToString("F")} TRF: {newTransaction.SenderRefCode} TrxID: {newTransaction.ID}. Bal:{receiverWallet.Spy}"
                     };
 
                     await _unitOfWork.Notifications.Create(senderNotification);
@@ -780,6 +781,50 @@ namespace MainAPI.Business.Spyder
                 throw;
             }
         }
+        public async Task<ResponseMessage<Wallet>> UpdateBankDetails(RequestObject<Wallet> requestObject)
+        {
+            ResponseMessage<Wallet> responseMessage = new ResponseMessage<Wallet>();
+            try
+            {
+                Wallet walletProp = requestObject.Data;
+                Guid userID = Guid.Parse(requestObject.UserID);
+                User user = await _unitOfWork.Users.Find(userID);
+                Wallet wallet = await GetWalletByUserID(userID);
 
+                if (EncryptionService.Validate(requestObject.ItemID, user.Password))
+                {
+                    wallet.BankAccountName = walletProp.BankAccountName;
+                    wallet.BankAccountNumber = walletProp.BankAccountNumber;
+                    wallet.BankName = walletProp.BankName;
+
+                    wallet.DateModified = DateTime.Now;
+
+                    _unitOfWork.Wallets.Update(wallet);
+                    if (await _unitOfWork.Commit() > 0)
+                    {
+                        responseMessage.Data = await _unitOfWork.Wallets.GetWalletByUserID(userID); ;
+                        responseMessage.StatusCode = 200;
+                        responseMessage.Message = "Details Updated Successfully";
+                    }
+                    else
+                    {
+                        responseMessage.StatusCode = 201;
+                        responseMessage.Message = "Details Update Failed.";
+                    }
+                }
+                else
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Update Denied!";
+                }
+            }
+            catch (Exception)
+            {
+                responseMessage.StatusCode = 1018;
+                responseMessage.Message = "Failed. Try Again!";
+            }
+
+            return responseMessage;
+        }
     }
 }

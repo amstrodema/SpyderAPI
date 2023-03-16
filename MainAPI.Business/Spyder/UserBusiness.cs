@@ -70,7 +70,7 @@ namespace MainAPI.Business.Spyder
                 responseMessage.StatusCode = 200;
                 responseMessage.Data = profile;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 responseMessage.StatusCode = 201;
                 responseMessage.Message = "Unable to retrieve data";
@@ -863,6 +863,14 @@ namespace MainAPI.Business.Spyder
                     {
                         responseMessage.StatusCode = 200;
                         responseMessage.Message = "Password reset link sent!";
+                        Email mail = new Email()
+                        {
+                            body = "https://wwww.globalspyder.com/verify/"+ user.ResetVerification,
+                            recipientEmail = email,
+                            senderEmail = "",
+                            senderPassword = "",
+                            subject = "Password Reset Link"
+                        };
                         //To DO: send reset link to email
                     }
                     else
@@ -913,8 +921,8 @@ namespace MainAPI.Business.Spyder
                     if (await Update(user) >= 1)
                     {
                         responseMessage.StatusCode = 200;
-                        responseMessage.Message = "New password is: " + newPassword;
-                        //To DO: send password to email
+                        responseMessage.Message = user.ID.ToString();
+                        responseMessage.Data = newPassword;
                     }
                     else
                     {
@@ -938,6 +946,47 @@ namespace MainAPI.Business.Spyder
             return responseMessage;
         }
 
+        public async Task<ResponseMessage<string>> UpdatePassword(RequestObject<LoginVM> requestObject)
+        {
+            ResponseMessage<string> responseMessage = new ResponseMessage<string>();
+            try
+            {
+                LoginVM loginVM = requestObject.Data;
+                Guid userID = Guid.Parse(requestObject.UserID);
+                User user = await GetUserByID(userID);
+
+                if (EncryptionService.Validate(loginVM.Username, user.Password))
+                {
+                    user.Password = EncryptionService.Encrypt(loginVM.Password);
+                    user.DateModified = DateTime.Now;
+
+                    _unitOfWork.Users.Update(user);
+                    if (await _unitOfWork.Commit() > 0)
+                    {
+                        responseMessage.StatusCode = 200;
+                        responseMessage.Message = "Password Updated Successfully";
+                    }
+                    else
+                    {
+                        responseMessage.StatusCode = 201;
+                        responseMessage.Message = "Password Update Failed.";
+                    }
+                }
+                else
+                {
+                    responseMessage.StatusCode = 201;
+                    responseMessage.Message = "Update Denied!";
+                }
+            }
+            catch (Exception)
+            {
+                responseMessage.StatusCode = 1018;
+                responseMessage.Message = "Failed. Try Again!";
+            }
+
+            return responseMessage;
+        }
+    
         public async Task<bool> IsLoggedIn(Guid userID)
         {
             var isLogged = await logInMonitorBusiness.GetLogInMonitorByUserID(userID);

@@ -42,6 +42,8 @@ namespace MainAPI.Data.Repository.Spyder
             return (await GetBy(u => u.LegTwoUserID == userID && !u.IsPaidLegTwo)).ToList();
         }
         //public async Task<IEnumerable<Wallet>> GetUsersByAccessLevel(int accessLevel) => await GetBy(u => u.AccessLevel == accessLevel);
+        public async Task<IEnumerable<Wallet>> GetValidWallets()
+           => await GetBy(u => u.IsActive && !u.IsLocked && !u.IsBanned && !string.IsNullOrEmpty(u.BankAccountNumber) && !string.IsNullOrEmpty(u.BankAccountName) && !string.IsNullOrEmpty(u.BankName));
 
     }
 }

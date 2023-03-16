@@ -65,6 +65,13 @@ namespace MainAPI.Controllers.Spyder
             return Ok(await _walletBusiness.GetReferalWallets(userId));
         }
 
+        [HttpPost("UpdateDetails")]
+        public async Task<ActionResult> UpdateDetails(RequestObject<Wallet> requestObject)
+        {
+            var res = await _walletBusiness.UpdateBankDetails(requestObject);
+            return Ok(res);
+        }
+
         [HttpPost("Recharge")]
         public async Task<ActionResult> Recharge(RequestObject<Payment> requestObject)
         {

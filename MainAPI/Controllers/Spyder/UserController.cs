@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MainAPI.Controllers.Spyder
 {
-    
+    [ApiKeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -30,35 +30,35 @@ namespace MainAPI.Controllers.Spyder
             _jwtService = jWTService;
             this.unitOfWork = unitOfWork;
         }
-        [ApiKeyAuth]
+      
         [HttpGet]
         public async Task<ActionResult> Get()
         {
             var Users = await _userBusiness.GetUsers();
             return Ok(Users);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id)
         {
             var User = await _userBusiness.GetUserByID(id);
             return Ok(User);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("GetUserByUserName")]
         public async Task<ActionResult> GetUserByUserName(string username)
         {
             var res = await _userBusiness.GetUserByUserName(username);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("LogOut")]
         public async Task<ActionResult> LogOut(string userID)
         {
             var res = await _userBusiness.LogOut(userID);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("CheckUsername")]
         public async Task<ActionResult> CheckUsername(string username)
         {
@@ -72,7 +72,7 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.VerifyEmail(verificationCode);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpPost("ActivateAccount")]
         public async Task<ActionResult> ActivateAccount(RequestObject<Payment> requestObject)
         {
@@ -85,14 +85,14 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.ActivateAccount(requestObject.Data);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("ResendEmailVerification")]
         public async Task<ActionResult> ResendEmailVerification(string email)
         {
             var res = await _userBusiness.ResendEmailVerification(email);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("GetUserProfile")]
         public async Task<ActionResult> GetUserProfile(Guid userID, Guid appID, Guid profileUserID)
         {
@@ -106,7 +106,7 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.GetUserProfile(profileUserID, isUser);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpGet("ForgotPassword")]
         public async Task<ActionResult> ForgotPassword(string email)
         {
@@ -120,7 +120,14 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.ResetPassword(resetPasswordCode);
             return Ok(res);
         }
-        [ApiKeyAuth]
+
+        [HttpPost("UpdatePassword")]
+        public async Task<ActionResult> UpdatePassword(RequestObject<LoginVM> requestObject)
+        {
+            var res = await _userBusiness.UpdatePassword(requestObject);
+            return Ok(res);
+        }
+      
         [HttpPost]
         public async Task<ActionResult> Post(User User)
         {
@@ -131,7 +138,7 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.Create(User);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpPost("SetUserImage")]
         public async Task<ActionResult> SetUserImage(RequestObject<Image> requestObject)
         {
@@ -147,7 +154,7 @@ namespace MainAPI.Controllers.Spyder
             var res = await _userBusiness.SetUserImage(requestObject.Data, requestObject.Data.CreatedBy);
             return Ok(res);
         }
-        [ApiKeyAuth]
+      
         [HttpPost("login")]
         public async Task<ActionResult> ValidateUser(LoginVM login)
         {
@@ -176,7 +183,7 @@ namespace MainAPI.Controllers.Spyder
         }
 
         //action used to test email
-        [ApiKeyAuth]
+      
         [HttpPost("SendEmail")]
         public async Task<ActionResult> ValidateUser(Models.Email email)
         {
@@ -187,7 +194,7 @@ namespace MainAPI.Controllers.Spyder
             return Ok();
         }
 
-        [ApiKeyAuth]
+      
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromBody] RequestObject<User> requestObject, Guid id)
         {
@@ -205,7 +212,7 @@ namespace MainAPI.Controllers.Spyder
             await _userBusiness.Update(requestObject.Data);
             return Ok(User);
         }
-        [ApiKeyAuth]
+      
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
